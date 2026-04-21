@@ -36,29 +36,47 @@ exports.login = async (req, res) => {
   try {
     const { identifier, password } = req.body;
 
+    if (!identifier || !password) {
+      return res.status(400).json({ message: "Username/email dan password wajib diisi" });
+    }
+
+    // Cari user by username ATAU email
     const user = await User.findOne({
       $or: [
-        { email: identifier },
-        { username: identifier }
-      ]
+        { username: identifier.toLowerCase() },
+        { email: identifier.toLowerCase() },
+      ],
     });
+
     if (!user) {
-      return res.status(400).json({ msg: "User not found" });
+      return res.status(401).json({ message: "Username/email atau password salah" });
     }
 
+    // Cek password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ msg: "Wrong password" });
+      return res.status(401).json({ message: "Username/email atau password salah" });
     }
 
+    // Buat JWT token
     const token = jwt.sign(
-      { id: user._id },
+      { id: user._id, username: user.username },
       process.env.JWT_SECRET,
-      { expiresIn: "1d" }
+      { expiresIn: "7d" }
     );
 
-    res.json({ token });
+    return res.status(200).json({
+      message: "Login berhasil",
+      token,
+      user: {
+        id: user._id,
+        nama: user.nama,
+        username: user.username,
+        email: user.email,
+      },
+    });
   } catch (err) {
-    res.status(500).json({ msg: err.message });
+    console.error("Login error:", err);
+    return res.status(500).json({ message: "Terjadi kesalahan server" });
   }
 };

@@ -1,82 +1,89 @@
-const User = require("../models/User");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
 exports.register = async (req, res) => {
   try {
-    const { name, username, email, phone, password } = req.body;
+    const { name, email, password } = req.body;
 
-    const hashed = await bcrypt.hash(password, 10);
+    const existingUser = await User.findByEmail(email);
 
-    const existingEmail = await User.findOne({ email });
-    if (existingEmail) {
-      return res.status(400).json({ msg: "Email already registered" });
+    if (existingUser) {
+      return res.status(409).json({
+        message: 'Email already registered',
+      });
     }
 
-    const existingUsername = await User.findOne({ username });
-    if (existingUsername) {
-      return res.status(400).json({ msg: "Username already taken" });
-    }
+    const passwordHash = await bcrypt.hash(password, 10);
 
     const user = await User.create({
       name,
-      username,
       email,
-      phone,
-      password: hashed
+      passwordHash,
+      role: 'CLIENT',
     });
 
-    res.json(user);
-  } catch (err) {
-    res.status(500).json({ msg: err.message });
+    return res.status(201).json({
+      message: 'Register success',
+      data: user,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: 'Register failed',
+      error: error.message,
+    });
   }
 };
 
 exports.login = async (req, res) => {
   try {
-    const { identifier, password } = req.body;
+    const { email, password } = req.body;
 
-    if (!identifier || !password) {
-      return res.status(400).json({ message: "Username/email dan password wajib diisi" });
-    }
-
-    // Cari user by username ATAU email
-    const user = await User.findOne({
-      $or: [
-        { username: identifier.toLowerCase() },
-        { email: identifier.toLowerCase() },
-      ],
-    });
+    const user = await User.findByEmail(email);
 
     if (!user) {
-      return res.status(401).json({ message: "Username/email atau password salah" });
+      return res.status(401).json({
+        message: 'Invalid email or password',
+      });
     }
 
-    // Cek password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: "Username/email atau password salah" });
-    }
-
-    // Buat JWT token
-    const token = jwt.sign(
-      { id: user._id, username: user.username },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
+    const isPasswordValid = await bcrypt.compare(
+      password,
+      user.password_hash
     );
 
-    return res.status(200).json({
-      message: "Login berhasil",
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        message: 'Invalid email or password',
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '1d',
+      }
+    );
+
+    return res.json({
+      message: 'Login success',
       token,
       user: {
-        id: user._id,
-        nama: user.nama,
-        username: user.username,
+        id: user.id,
+        name: user.name,
         email: user.email,
+        role: user.role,
       },
     });
-  } catch (err) {
-    console.error("Login error:", err);
-    return res.status(500).json({ message: "Terjadi kesalahan server" });
+  } catch (error) {
+    return res.status(500).json({
+      message: 'Login failed',
+      error: error.message,
+    });
   }
 };

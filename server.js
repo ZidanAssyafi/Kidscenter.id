@@ -1,29 +1,29 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-//const auth = require("./middleware/authMiddleware");
-require("dotenv").config();
+require('dotenv').config();
+
+const express = require('express');
+const cors = require('cors');
+
+const authRoutes = require('./routes/auth');
 
 const app = express();
+
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true,
+}));
+
 app.use(express.json());
-app.use(cors());
 
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("DB connected"))
-  .catch(err => console.log(err));
-
-app.use("/api/auth", require("./routes/auth"));
-
-app.get("/health", (req, res) => {
-  res.send("API is running");
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Backend jalan bos',
+  });
 });
 
-//nanti tambahin route user profile pake auth middleware
-//app.get("/api/user", auth, (req, res) => {
-  //res.json({
-    //msg: "User data accessed",
-    //user: req.user
-  //});
-//});
+app.use('/api/auth', authRoutes);
 
-app.listen(5000, () => console.log("Server running"));
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});

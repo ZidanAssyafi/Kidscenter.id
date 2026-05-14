@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
+import "./landing.css";
 
 const nunito = Nunito({
   subsets: ["latin"],
@@ -14,6 +15,9 @@ export const metadata: Metadata = {
   title: "Kidscenter — Animasi Edukatif untuk Si Kecil",
   description:
     "Platform animasi edukatif berkualitas tinggi, aman, dan menyenangkan bagi anak-anak Indonesia.",
+  icons: {
+    icon: "/Mari.png",
+  },
 };
 
 export default function RootLayout({
@@ -25,7 +29,7 @@ export default function RootLayout({
      * mengubah atribut data-theme di sisi client setelah mount.
      * Tanpa ini Next.js akan memunculkan hydration warning.
      */
-    <html lang="id" className={nunito.variable} suppressHydrationWarning>
+    <html lang="id" className={nunito.variable} suppressHydrationWarning data-scroll-behavior="smooth">
       <body className="min-h-full flex flex-col">
         <ThemeProvider>{children}</ThemeProvider>
       </body>

@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   description:
     "Platform animasi edukatif berkualitas tinggi, aman, dan menyenangkan bagi anak-anak Indonesia.",
   icons: {
-    icon: "/Mari.png",
+    icon: "/Mari.webp",
   },
 };
 

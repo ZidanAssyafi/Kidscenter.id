@@ -13,7 +13,7 @@ export default function AuthLayout({
   children,
   tagline,
   desc,
-  illustrationSrc = "/Mari.png",
+  illustrationSrc = "/Mari.webp",
   illustrationAlt = "Mari",
 }: AuthLayoutProps) {
   return (

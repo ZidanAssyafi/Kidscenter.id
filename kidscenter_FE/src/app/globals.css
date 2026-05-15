@@ -93,7 +93,7 @@ body {
 ============================================================ */
 [data-theme="light"] .texture-cream-bg,
 [data-theme="light"] .texture-cream-bg-scroll {
-  background-image: url('/textureBg.png');
+  background-image: url('/textureBg.webp');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -220,7 +220,7 @@ input:focus {
   z-index: 15;
   pointer-events: none;
   background-color: var(--kc-bg);
-  background-image: url('/textureBg.png');
+  background-image: url('/textureBg.webp');
   background-size: cover;
   background-position: center;
   

@@ -282,22 +282,13 @@ export default function LandingPage() {
           muted
           loop
           playsInline
-          preload="metadata"
-          onError={(e) => {
-            (e.currentTarget as HTMLVideoElement).style.display = "none";
-            const placeholder = document.getElementById("hero-placeholder");
-            if (placeholder) placeholder.style.display = "flex";
-          }}
+          preload="auto"
+          poster="/posters/poster-1.webp"
         >
-          <source src="/videos/hero.webm" type="video/webm" />
+          {/* Prioritaskan MP4 untuk kompabilitas iOS/Safari yang optimal */}
           <source src="/videos/hero.mp4" type="video/mp4" />
+          <source src="/videos/hero.webm" type="video/webm" />
         </video>
-        <div id="hero-placeholder" className="hero-placeholder" style={{ display: "none" }}>
-          <div style={{ textAlign: "center", color: "var(--kc-text-faint)", fontSize: 15, fontWeight: 700 }}>
-            <div style={{ fontSize: 80, marginBottom: 16 }}>🎬</div>
-            Tempatkan video animasi di /public/videos/hero.webm
-          </div>
-        </div>
         <div className="hero-overlay" style={{ opacity: 0.35 }} />
       </section>
 
@@ -361,20 +352,7 @@ export default function LandingPage() {
                 height={600}
                 className="card-poster"
                 loading="lazy"
-                onError={(e) => {
-                  const t = e.currentTarget; t.style.display = "none";
-                  const sibling = t.nextElementSibling as HTMLElement;
-                  if (sibling) sibling.style.display = "flex";
-                }}
               />
-              <div className="card-poster-placeholder" style={{ display: "none" }}>
-                <div className="play-icon-big">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                  </svg>
-                </div>
-                <span>Poster: /public/posters/poster-{anim.id}.webp</span>
-              </div>
               <div className="card-body">
                 <div className="card-meta">
                   <span className="card-genre" style={{ background: genreColors[anim.genre] || "#1E2D6B" }}>{anim.genre}</span>
@@ -407,6 +385,7 @@ export default function LandingPage() {
               ref={produkGridRef}
               onTouchStart={() => setIsInteractingProduk(true)}
               onTouchEnd={() => setTimeout(() => setIsInteractingProduk(false), 2000)}
+              onTouchCancel={() => setTimeout(() => setIsInteractingProduk(false), 2000)}
               onMouseEnter={() => setIsInteractingProduk(true)}
               onMouseLeave={() => setIsInteractingProduk(false)}
             >
@@ -419,16 +398,7 @@ export default function LandingPage() {
                     height={400}
                     className="produk-foto-img"
                     loading="lazy"
-                    onError={(e) => {
-                      const t = e.currentTarget; t.style.display = "none";
-                      const sibling = t.nextElementSibling as HTMLElement;
-                      if (sibling) sibling.style.display = "flex";
-                    }}
                   />
-                  <div className="produk-foto-placeholder" style={{ display: "none" }}>
-                    <div className="produk-foto-placeholder-icon">🖼️</div>
-                    <div>produk-{(i % produkFotos.length) + 1}.jpg</div>
-                  </div>
                 </div>
               ))}
             </div>
@@ -470,13 +440,7 @@ export default function LandingPage() {
                     height={200}
                     className="award-badge-img"
                     loading="lazy"
-                    onError={(e) => {
-                      const t = e.currentTarget; t.style.display = "none";
-                      const sibling = t.nextElementSibling as HTMLElement;
-                      if (sibling) sibling.style.display = "flex";
-                    }}
                   />
-                  <div className="award-badge-placeholder" style={{ display: "none" }}>🏆</div>
                 </div>
               ))}
             </div>
@@ -540,16 +504,7 @@ export default function LandingPage() {
                     height={600}
                     className="dokumentasi-img"
                     loading="lazy"
-                    onError={(e) => {
-                      const t = e.currentTarget; t.style.display = "none";
-                      const sibling = t.nextElementSibling as HTMLElement;
-                      if (sibling) sibling.style.display = "flex";
-                    }}
                   />
-                  <div className="dokumentasi-placeholder" style={{ display: "none" }}>
-                    <div className="dokumentasi-placeholder-icon">📷</div>
-                    <div>dokumentasi-{item.id}.jpg</div>
-                  </div>
                   <div className="dokumentasi-overlay" />
                 </div>
               ))}

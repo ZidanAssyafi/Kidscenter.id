@@ -25,7 +25,7 @@
 }
 
 [data-theme="light"] .auth-left {
-  background-image: url('/textureBg.png');
+  background-image: url('/textureBg.webp');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -298,7 +298,7 @@
     flex-direction: column;
     min-height: 100vh;
     background: var(--kc-cream);
-    background-image: url('/textureBg.png');
+    background-image: url('/textureBg.webp');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;

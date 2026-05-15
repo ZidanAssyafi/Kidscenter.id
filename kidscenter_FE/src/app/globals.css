@@ -24,51 +24,9 @@
 }
 
 /* ============================================================
-   DEFAULT = DARK MODE
+   LIGHT MODE (ONLY)
 ============================================================ */
-:root,
-[data-theme="dark"] {
-  --kc-bg: #1A1A3E;
-  --kc-bg-alt: #141430;
-  --kc-bg-deep: #0e0e23;
-
-  --kc-surface: rgba(255,255,255,0.05);
-  --kc-surface-hover: rgba(255,255,255,0.08);
-  --kc-panel: rgba(255,255,255,0.04);
-
-  --kc-border: rgba(255,255,255,0.10);
-  --kc-border-focus: var(--kc-yellow);
-
-  --kc-text: #FFFFFF;
-  --kc-text-muted: rgba(255,255,255,0.65);
-  --kc-text-faint: rgba(255,255,255,0.35);
-
-  --kc-input-bg: rgba(255,255,255,0.06);
-  --kc-input-bg-focus: rgba(255,184,0,0.08);
-  --kc-placeholder: rgba(255,255,255,0.25);
-
-  --kc-shadow: rgba(0,0,0,0.35);
-  --kc-shadow-card: 0 20px 60px rgba(0,0,0,0.45);
-
-  --kc-overlay: rgba(0,0,0,0.7);
-
-  --kc-btn-primary: linear-gradient(135deg, #FFB800 0%, #F04E23 100%);
-  --kc-btn-primary-hover: linear-gradient(135deg, #ffc933 0%, #ff5d30 100%);
-  --kc-btn-text: #ffffff;
-
-  --kc-error: #ff8a6e;
-  --kc-error-bg: rgba(240,78,35,0.1);
-  --kc-error-border: rgba(240,78,35,0.3);
-
-  --kc-success: #2ecc71;
-  --kc-success-bg: rgba(46,204,113,0.12);
-  --kc-success-border: rgba(46,204,113,0.35);
-}
-
-/* ============================================================
-   LIGHT MODE
-============================================================ */
-[data-theme="light"] {
+:root {
   --kc-bg: #FFF7E8;
   --kc-bg-alt: #fff3df;
   --kc-bg-deep: #f7ead2;

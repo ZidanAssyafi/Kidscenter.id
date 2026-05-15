@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ThemeToggle } from "../components/ThemeToggle";
 
 const animations = [
   {
@@ -264,7 +263,6 @@ export default function LandingPage() {
           <span>Kidscenter</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <ThemeToggle inline />
           <Link href="/login" className="btn-login">Masuk</Link>
         </div>
       </nav>
@@ -285,12 +283,12 @@ export default function LandingPage() {
             if (placeholder) placeholder.style.display = "flex";
           }}
         >
-          <source src="/videos/hero.mp4" type="video/mp4" />
+          <source src="/videos/hero.webm" type="video/webm" />
         </video>
         <div id="hero-placeholder" className="hero-placeholder" style={{ display: "none" }}>
           <div style={{ textAlign: "center", color: "var(--kc-text-faint)", fontSize: 15, fontWeight: 700 }}>
             <div style={{ fontSize: 80, marginBottom: 16 }}>🎬</div>
-            Tempatkan video animasi di /public/videos/hero.mp4
+            Tempatkan video animasi di /public/videos/hero.webm
           </div>
         </div>
         <div className="hero-overlay" style={{ opacity: 0.35 }} />
@@ -359,7 +357,11 @@ export default function LandingPage() {
                 }}
               />
               <div className="card-poster-placeholder" style={{ display: "none" }}>
-                <div className="play-icon-big">▶</div>
+                <div className="play-icon-big">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  </svg>
+                </div>
                 <span>Poster: /public/posters/poster-{anim.id}.jpg</span>
               </div>
               <div className="card-body">
@@ -369,7 +371,12 @@ export default function LandingPage() {
                 </div>
                 <h3 className="card-title">{anim.title}</h3>
                 <p className="card-desc">{anim.description}</p>
-                <button className="btn-trailer" onClick={() => openTrailer(anim)}>▶ Lihat Trailer</button>
+                <button className="btn-trailer" onClick={() => openTrailer(anim)}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  </svg>
+                  Lihat Trailer
+                </button>
               </div>
             </div>
           ))}
@@ -626,11 +633,6 @@ export default function LandingPage() {
         </div>
       )}
 
-      {/* Demo Toggle — hapus di production */}
-      <button className="demo-toggle" onClick={() => setIsLoggedIn((v) => !v)} title="Demo only">
-        <div className="demo-dot" style={{ background: isLoggedIn ? "#2ecc71" : "#F04E23" }} />
-        {isLoggedIn ? "Login: ON" : "Login: OFF"}
-      </button>
     </div>
   );
 }

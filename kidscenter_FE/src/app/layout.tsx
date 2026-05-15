@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
-import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 import "./landing.css";
 
@@ -24,14 +23,9 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    /*
-     * suppressHydrationWarning diperlukan karena ThemeProvider
-     * mengubah atribut data-theme di sisi client setelah mount.
-     * Tanpa ini Next.js akan memunculkan hydration warning.
-     */
-    <html lang="id" className={nunito.variable} suppressHydrationWarning data-scroll-behavior="smooth">
+    <html lang="id" className={nunito.variable} data-theme="light" data-scroll-behavior="smooth">
       <body className="min-h-full flex flex-col">
-        <ThemeProvider>{children}</ThemeProvider>
+        {children}
       </body>
     </html>
   );

@@ -472,10 +472,6 @@
     color: var(--kc-text);
   }
 
-  .form-header {
-    padding-left: 20px;
-    padding-right: 20px;
-  }
 
   .form-group {
     padding-left: 20px;

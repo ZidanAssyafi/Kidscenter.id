@@ -107,15 +107,24 @@ body {
   background-attachment: scroll;
 }
 
-/* smooth transition */
-*,
-*::before,
-*::after {
+/* smooth transition — hanya untuk elemen interaktif, bukan semua elemen */
+a,
+button,
+input,
+select,
+[class*="btn-"],
+.layanan-item,
+.stat-card,
+.produk-foto-item,
+.dokumentasi-item,
+.social-icon,
+.card {
   transition:
     background-color 0.25s ease,
     color 0.25s ease,
     border-color 0.25s ease,
-    box-shadow 0.25s ease;
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
 }
 
 /* ============================================================

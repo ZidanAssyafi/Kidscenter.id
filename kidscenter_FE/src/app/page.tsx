@@ -100,14 +100,77 @@ export default function LandingPage() {
   const [popupOpen, setPopupOpen] = useState(false);
   const [selectedAnim, setSelectedAnim] = useState<SelectedAnim>(null);
   const [pesanPopupOpen, setPesanPopupOpen] = useState(false);
-
   const produkGridRef = useRef<HTMLDivElement>(null);
-  const [isInteractingProduk, setIsInteractingProduk] = useState(false);
+
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Auto-scroll produk: aktif di mobile (overflow-x:scroll), tidak aktif di desktop (overflow:hidden)
+  useEffect(() => {
+    const grid = produkGridRef.current;
+    if (!grid) return;
+
+    let rafId: number;
+    let isPaused = false;
+    let resumeTimer: NodeJS.Timeout | null = null;
+    let floatPos = 0;
+    let started = false;
+
+    const pause = () => {
+      isPaused = true;
+      if (resumeTimer) clearTimeout(resumeTimer);
+    };
+
+    const resume = () => {
+      if (resumeTimer) clearTimeout(resumeTimer);
+      resumeTimer = setTimeout(() => {
+        floatPos = grid.scrollLeft;
+        isPaused = false;
+      }, 900);
+    };
+
+    grid.addEventListener('touchstart', pause, { passive: true });
+    grid.addEventListener('touchend', resume, { passive: true });
+    grid.addEventListener('touchcancel', resume, { passive: true });
+
+    const tick = () => {
+      // Periksa apakah grid ini memang bisa di-scroll (hanya aktif jika overflow-x:scroll di CSS)
+      const canScroll = grid.scrollWidth > grid.clientWidth;
+
+      if (canScroll) {
+        if (!started) {
+          // Inisialisasi posisi float dari posisi scroll saat ini
+          floatPos = grid.scrollLeft;
+          started = true;
+        }
+
+        if (!isPaused) {
+          floatPos += 0.7;
+          const half = grid.scrollWidth / 2;
+          if (floatPos >= half) floatPos -= half;
+          grid.scrollLeft = floatPos;
+        }
+      }
+      rafId = requestAnimationFrame(tick);
+    };
+
+    // Tunggu sedikit agar browser selesai menghitung layout sebelum mulai
+    const startDelay = setTimeout(() => {
+      rafId = requestAnimationFrame(tick);
+    }, 100);
+
+    return () => {
+      clearTimeout(startDelay);
+      cancelAnimationFrame(rafId);
+      if (resumeTimer) clearTimeout(resumeTimer);
+      grid.removeEventListener('touchstart', pause);
+      grid.removeEventListener('touchend', resume);
+      grid.removeEventListener('touchcancel', resume);
+    };
   }, []);
 
   // Scroll-triggered hero video play - Optimize loading
@@ -174,33 +237,6 @@ export default function LandingPage() {
   }, []);
 
   useEffect(() => {
-    let animationFrameId: number;
-    let lastTime = performance.now();
-
-    const scroll = (time: number) => {
-      if (!isInteractingProduk && produkGridRef.current) {
-        if (time - lastTime > 20) { 
-          const grid = produkGridRef.current;
-          if (grid.scrollWidth > grid.clientWidth) {
-            grid.scrollLeft += 1;
-            
-            // Seamless infinite loop: jump to 0 when halfway through duplicated items
-            // Give a 1px buffer to prevent snapping issues
-            if (grid.scrollLeft >= (grid.scrollWidth / 2) - 1) {
-              grid.scrollLeft = 0;
-            }
-          }
-          lastTime = time;
-        }
-      }
-      animationFrameId = requestAnimationFrame(scroll);
-    };
-
-    animationFrameId = requestAnimationFrame(scroll);
-    return () => cancelAnimationFrame(animationFrameId);
-  }, [isInteractingProduk]);
-
-  useEffect(() => {
     if (!popupOpen && trailerVideoRef.current) {
       trailerVideoRef.current.pause();
       trailerVideoRef.current.currentTime = 0;
@@ -240,14 +276,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div
-      style={{
-        fontFamily: "'Nunito', 'Poppins', sans-serif",
-        background: "var(--kc-bg)",
-        minHeight: "100vh",
-        overflowX: "hidden",
-      }}
-    >
+    <div className="landing-root">
 
       {/* HEADER */}
       <nav className={`header-nav${scrolled ? " scrolled" : ""}`}>
@@ -380,27 +409,23 @@ export default function LandingPage() {
           <div className="panel-content">
             <div className="panel-label">Studio Kami</div>
             <h2 className="panel-title">Produk Kami</h2>
-            <div
-              className="produk-foto-grid"
-              ref={produkGridRef}
-              onTouchStart={() => setIsInteractingProduk(true)}
-              onTouchEnd={() => setTimeout(() => setIsInteractingProduk(false), 2000)}
-              onTouchCancel={() => setTimeout(() => setIsInteractingProduk(false), 2000)}
-              onMouseEnter={() => setIsInteractingProduk(true)}
-              onMouseLeave={() => setIsInteractingProduk(false)}
-            >
-              {[...produkFotos, ...produkFotos].map((foto, i) => (
-                <div key={i} className="produk-foto-item">
-                  <Image
-                    src={foto.src}
-                    alt={foto.alt}
-                    width={600}
-                    height={400}
-                    className="produk-foto-img"
-                    loading="lazy"
-                  />
-                </div>
-              ))}
+            <div className="produk-foto-grid" ref={produkGridRef}>
+              <div className="produk-foto-track">
+                {[...produkFotos, ...produkFotos, ...produkFotos, ...produkFotos].map((foto, i) => (
+                  <div key={i} className="produk-foto-wrapper">
+                    <div className="produk-foto-item">
+                      <Image
+                        src={foto.src}
+                        alt={foto.alt}
+                        width={600}
+                        height={400}
+                        className="produk-foto-img"
+                        priority={i < 6}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

@@ -272,7 +272,7 @@ export default function LandingPage() {
         <video
           ref={videoRef}
           className="hero-video"
-          autoPlay={false}
+          autoPlay
           muted
           loop
           playsInline
@@ -284,6 +284,7 @@ export default function LandingPage() {
           }}
         >
           <source src="/videos/hero.webm" type="video/webm" />
+          <source src="/videos/hero.mp4" type="video/mp4" />
         </video>
         <div id="hero-placeholder" className="hero-placeholder" style={{ display: "none" }}>
           <div style={{ textAlign: "center", color: "var(--kc-text-faint)", fontSize: 15, fontWeight: 700 }}>

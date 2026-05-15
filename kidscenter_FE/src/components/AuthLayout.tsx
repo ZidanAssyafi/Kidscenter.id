@@ -21,7 +21,7 @@ export default function AuthLayout({
       <div className="auth-left">
         <div className="auth-content">
           <Link href="/" className="auth-logo">
-            <img src="/logo.png" alt="Kidscenter" className="logo-img" />
+            <img src="/logo.webp" alt="Kidscenter" className="logo-img" />
           </Link>
 
           <div className="auth-illustration">

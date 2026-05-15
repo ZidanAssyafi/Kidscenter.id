@@ -177,14 +177,17 @@ export default function LandingPage() {
     let lastTime = performance.now();
 
     const scroll = (time: number) => {
-      if (!isInteractingProduk && produkGridRef.current && window.innerWidth <= 768) {
-        if (time - lastTime > 25) { // Control scroll speed (lower = faster)
+      if (!isInteractingProduk && produkGridRef.current) {
+        if (time - lastTime > 20) { 
           const grid = produkGridRef.current;
-          grid.scrollLeft += 1;
-
-          // Seamless infinite loop: jump to 0 when halfway through duplicated items
-          if (grid.scrollLeft >= grid.scrollWidth / 2) {
-            grid.scrollLeft = 0;
+          if (grid.scrollWidth > grid.clientWidth) {
+            grid.scrollLeft += 1;
+            
+            // Seamless infinite loop: jump to 0 when halfway through duplicated items
+            // Give a 1px buffer to prevent snapping issues
+            if (grid.scrollLeft >= (grid.scrollWidth / 2) - 1) {
+              grid.scrollLeft = 0;
+            }
           }
           lastTime = time;
         }
@@ -396,7 +399,7 @@ export default function LandingPage() {
               className="produk-foto-grid"
               ref={produkGridRef}
               onTouchStart={() => setIsInteractingProduk(true)}
-              onTouchEnd={() => { setTimeout(() => setIsInteractingProduk(false), 2000); }}
+              onTouchEnd={() => setTimeout(() => setIsInteractingProduk(false), 2000)}
               onMouseEnter={() => setIsInteractingProduk(true)}
               onMouseLeave={() => setIsInteractingProduk(false)}
             >

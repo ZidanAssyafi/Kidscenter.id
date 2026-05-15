@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 const animations = [
   {
@@ -56,32 +57,32 @@ const genreColors: Record<string, string> = {
   Drama: "#FFB800",
 };
 
-// 3 foto produk — simpan di /public/images/produk-1.jpg, produk-2.jpg, produk-3.jpg
+// 3 foto produk — simpan di /public/images/produk-1.webp, produk-2.webp, produk-3.webp
 const produkFotos = [
-  { src: "/images/mascot-footer.png", alt: "Produk 1" },
-  { src: "/images/produk-2.png", alt: "Produk 2" },
-  { src: "/images/produk-3.png", alt: "Produk 3" },
+  { src: "/images/mascot-footer.webp", alt: "Produk 1" },
+  { src: "/images/produk-2.webp", alt: "Produk 2" },
+  { src: "/images/produk-3.webp", alt: "Produk 3" },
 ];
 
-// 4 award — simpan di /public/images/award-1.png s/d award-4.png
+// 4 award — simpan di /public/images/award-1.webp s/d award-4.webp
 const awards = [
-  { id: 1, src: "/images/award-1.png", alt: "Award 1", label: "3rd Winner of IDENTIK\nContent Creator\nCategory, Kominfo" },
-  { id: 2, src: "/images/award-2.png", alt: "Award 2", label: "Finalist AICTA\nand APICTA\n2021" },
-  { id: 3, src: "/images/award-3.png", alt: "Award 3", label: "Awardee PPBT\nKemenristekdikti" },
-  { id: 4, src: "/images/award-4.png", alt: "Award 4", label: "Best Edupreuner\ndi acara\niYES Malaysia" },
+  { id: 1, src: "/images/award-1.webp", alt: "Award 1", label: "3rd Winner of IDENTIK\nContent Creator\nCategory, Kominfo" },
+  { id: 2, src: "/images/award-2.webp", alt: "Award 2", label: "Finalist AICTA\nand APICTA\n2021" },
+  { id: 3, src: "/images/award-3.webp", alt: "Award 3", label: "Awardee PPBT\nKemenristekdikti" },
+  { id: 4, src: "/images/award-4.webp", alt: "Award 4", label: "Best Edupreuner\ndi acara\niYES Malaysia" },
 ];
 
-// 2 maskot untuk seksi award — simpan di /public/images/mascot-award-1.png & mascot-award-2.png
+// 2 maskot untuk seksi award — simpan di /public/images/mascot-award-1.webp & mascot-award-2.webp
 const awardMascots = [
-  { src: "/images/mascot-award-1.png", alt: "Maskot 1" },
-  { src: "/images/mascot-award-2.png", alt: "Maskot 2" },
+  { src: "/images/mascot-award-1.webp", alt: "Maskot 1" },
+  { src: "/images/mascot-award-2.webp", alt: "Maskot 2" },
 ];
 
-// 3 foto dokumentasi — simpan di /public/images/dokumentasi-1.jpg s/d dokumentasi-3.jpg
+// 3 foto dokumentasi — simpan di /public/images/dokumentasi-1.webp s/d dokumentasi-3.webp
 const dokumentasiItems = [
-  { id: 1, src: "/images/dokumentasi-1.png", alt: "Dokumentasi 1" },
-  { id: 2, src: "/images/dokumentasi-2.png", alt: "Dokumentasi 2" },
-  { id: 3, src: "/images/dokumentasi-3.png", alt: "Dokumentasi 3" },
+  { id: 1, src: "/images/dokumentasi-1.webp", alt: "Dokumentasi 1" },
+  { id: 2, src: "/images/dokumentasi-2.webp", alt: "Dokumentasi 2" },
+  { id: 3, src: "/images/dokumentasi-3.webp", alt: "Dokumentasi 3" },
 ];
 
 type SelectedAnim = (typeof animations)[number] | null;
@@ -251,9 +252,11 @@ export default function LandingPage() {
       {/* HEADER */}
       <nav className={`header-nav${scrolled ? " scrolled" : ""}`}>
         <div className="logo-text">
-          <img
-            src="/logo.png"
+          <Image
+            src="/logo.webp"
             alt="Kidscenter Logo"
+            width={150}
+            height={42}
             style={{ height: 42, width: "auto", display: "block" }}
             onError={(e) => {
               const t = e.currentTarget;
@@ -315,9 +318,11 @@ export default function LandingPage() {
           </div>
           <div className={`intro-mascot${introVisible ? " visible" : ""}`}>
             <div className="mascot-bg">
-              <img
+              <Image
                 src="/mascot.webp"
                 alt="Maskot Kidscenter"
+                width={800}
+                height={800}
                 className="mascot-img"
                 loading="lazy"
                 onError={(e) => {
@@ -349,9 +354,11 @@ export default function LandingPage() {
               className={`anim-card${visibleCards.includes(index) ? " visible" : ""}`}
               ref={(el) => { cardRefs.current[index] = el; }}
             >
-              <img
-                src={`/posters/poster-${anim.id}.jpg`}
+              <Image
+                src={`/posters/poster-${anim.id}.webp`}
                 alt={anim.title}
+                width={400}
+                height={600}
                 className="card-poster"
                 loading="lazy"
                 onError={(e) => {
@@ -366,7 +373,7 @@ export default function LandingPage() {
                     <polygon points="5 3 19 12 5 21 5 3"></polygon>
                   </svg>
                 </div>
-                <span>Poster: /public/posters/poster-{anim.id}.jpg</span>
+                <span>Poster: /public/posters/poster-{anim.id}.webp</span>
               </div>
               <div className="card-body">
                 <div className="card-meta">
@@ -405,9 +412,11 @@ export default function LandingPage() {
             >
               {[...produkFotos, ...produkFotos].map((foto, i) => (
                 <div key={i} className="produk-foto-item">
-                  <img
+                  <Image
                     src={foto.src}
                     alt={foto.alt}
+                    width={600}
+                    height={400}
                     className="produk-foto-img"
                     loading="lazy"
                     onError={(e) => {
@@ -454,9 +463,11 @@ export default function LandingPage() {
             <div className="awards-grid">
               {awards.map((award) => (
                 <div key={award.id} className="award-item">
-                  <img
+                  <Image
                     src={award.src}
                     alt={award.alt}
+                    width={200}
+                    height={200}
                     className="award-badge-img"
                     loading="lazy"
                     onError={(e) => {
@@ -478,9 +489,11 @@ export default function LandingPage() {
           </div>
 
           <div className="panel-award-mascot">
-            <img
+            <Image
               src={awardMascots[0].src}
               alt={awardMascots[0].alt}
+              width={300}
+              height={400}
               loading="lazy"
               onError={(e) => {
                 const t = e.currentTarget; t.style.display = "none";
@@ -497,9 +510,11 @@ export default function LandingPage() {
         {/* Panel Kanan: Dokumentasi */}
         <div className="panel-dokumentasi">
           <div className="panel-dokumentasi-mascot">
-            <img
+            <Image
               src={awardMascots[1].src}
               alt={awardMascots[1].alt}
+              width={300}
+              height={400}
               loading="lazy"
               onError={(e) => {
                 const t = e.currentTarget; t.style.display = "none";
@@ -518,9 +533,11 @@ export default function LandingPage() {
             <div className="dokumentasi-grid">
               {dokumentasiItems.map((item) => (
                 <div key={item.id} className="dokumentasi-item">
-                  <img
+                  <Image
                     src={item.src}
                     alt={item.alt}
+                    width={800}
+                    height={600}
                     className="dokumentasi-img"
                     loading="lazy"
                     onError={(e) => {
@@ -555,7 +572,7 @@ export default function LandingPage() {
 
         <div className="footer-flex-container">
           <div className="footer-logo-wrap">
-            <img src="/logo.png" alt="Kidscenter Logo" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+            <Image src="/logo.webp" alt="Kidscenter Logo" width={200} height={60} onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }} />
           </div>
 
           <div className="footer-socials">
@@ -574,7 +591,7 @@ export default function LandingPage() {
           </div>
 
           <div className="footer-mascot-wrap">
-            <img src="/images/mascot-footer.png" alt="Kidscenter Mascot" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+            <Image src="/images/mascot-footer.webp" alt="Kidscenter Mascot" width={200} height={300} onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }} />
           </div>
         </div>
 
@@ -606,7 +623,7 @@ export default function LandingPage() {
                     if (fb) fb.style.display = "flex";
                   }}
                 >
-                  <source src={`/videos/trailer-${selectedAnim.id}.mp4`} type="video/mp4" />
+                  <source src="/videos/trailer-1.webm" type="video/webm" />
                   Browser Anda tidak mendukung tag video.
                 </video>
                 <div id={`video-fallback-${selectedAnim.id}`} className="popup-video-fallback" style={{ display: "none" }}>

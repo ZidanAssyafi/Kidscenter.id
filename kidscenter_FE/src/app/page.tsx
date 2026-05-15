@@ -7,7 +7,7 @@ const animations = [
   {
     id: 1,
     title: "Petualangan Bintang",
-    description: "Ikuti perjalanan seru Bintang si kucing pemberani menjelajahi hutan ajaib yang penuh kejutan dan pelajaran berharga.",
+    description: "Ikuti perjalanan seru Bintang si kucing menjelajahi hutan ajaib yang penuh kejutan dan pelajaran berharga.",
     genre: "Petualangan",
     duration: "24 menit",
   },

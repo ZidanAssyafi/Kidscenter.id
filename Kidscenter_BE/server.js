@@ -8,7 +8,11 @@ const authRoutes = require('./routes/auth');
 const app = express();
 
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: [
+    'http://localhost:3000',
+    'https://kidscenter.id',
+    'https://www.kidscenter.id',
+  ],
   credentials: true,
 }));
 
@@ -16,7 +20,7 @@ app.use(express.json());
 
 app.get('/', (req, res) => {
   res.json({
-    message: 'Backend jalan bos',
+    message: 'ALHAMDULILLAH SERVER IS RUNNING',
   });
 });
 

@@ -184,35 +184,35 @@ const testimonies = [
     quote: "kidscenter membantu kami mengubah konsep brand menjadi visual animasi yang lebih hidup dan mudah dipahami.",
     name: "Rina Prameswari",
     position: "Brand Manager",
-    avatar: "/images/testimonial-1.png"
+    avatar: "/images/testimonial-1.webp"
   },
   {
     id: 2,
     quote: "Dengan storytelling dan visual yang tepat, pesan kampanye kami terasa lebih kuat dan mudah diingat audiens.",
     name: "Andika Wibowo",
     position: "Campaign Lead",
-    avatar: "/images/testimonial-2.png"
+    avatar: "/images/testimonial-2.webp"
   },
   {
     id: 3,
     quote: "Karakter yang dikembangkan terasa ekspresif, konsisten, dan punya potensi besar untuk menjadi IP jangka panjang.",
     name: "Maya Fadila",
     position: "Creative Director",
-    avatar: "/images/testimonial-3.png"
+    avatar: "/images/testimonial-3.webp"
   },
   {
     id: 4,
     quote: "Proses visual development-nya membantu kami melihat arah cerita dengan lebih jelas sebelum masuk produksi.",
     name: "Dewi Kartika",
     position: "Project Manager",
-    avatar: "/images/testimonial-4.png"
+    avatar: "/images/testimonial-4.webp"
   },
   {
     id: 5,
     quote: "Animasi dari kidscenter membuat produk kami tampil lebih menarik, modern, dan mudah dijelaskan ke calon pelanggan.",
     name: "Fajar Nugroho",
     position: "Founder Startup Edukasi",
-    avatar: "/images/testimonial-5.png"
+    avatar: "/images/testimonial-5.webp"
   }
 ];
 
@@ -368,53 +368,6 @@ export default function LandingPage() {
   return (
     <div className="landing-root">
 
-      {/* HEADER */}
-      <nav className={`header-nav${scrolled ? " scrolled" : ""}`}>
-        <div className="logo-text">
-          <Image
-            src="/logo.webp"
-            alt="Kidscenter Logo"
-            width={150}
-            height={42}
-            style={{ height: 42, width: "auto", display: "block" }}
-            onError={(e) => {
-              const t = e.currentTarget;
-              t.style.display = "none";
-              const sibling = t.nextElementSibling as HTMLElement;
-              if (sibling) sibling.style.display = "flex";
-            }}
-          />
-          <div className="logo-icon" style={{ display: "none" }}>🌟</div>
-          <span>Kidscenter</span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
-          <Link 
-            href="/catalog" 
-            className="btn-catalog" 
-            prefetch={false}
-            onClick={(e) => {
-              if (!isLoggedIn) {
-                e.preventDefault();
-                setPesanPopupOpen(true);
-                document.body.style.overflow = "hidden";
-              }
-            }}
-          >
-            Catalog
-          </Link>
-          {isLoggedIn ? (
-            <Link href="/profile" className="btn-profile" title="Profile" prefetch={false}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-              </svg>
-            </Link>
-          ) : (
-            <Link href="/login" className="btn-login" prefetch={false}>Masuk</Link>
-          )}
-        </div>
-      </nav>
-
       {/* HERO SECTION */}
       <section className="hero-section" ref={heroSectionRef}>
         <video
@@ -443,6 +396,9 @@ export default function LandingPage() {
             <p className="intro-desc">
               kidscenter membantu brand, lembaga, dan mitra kreatif mengubah ide, pesan, dan karakter menjadi animasi yang hidup, menarik, dan mudah diingat.
             </p>
+            <button className="btn-bergabung-navy" onClick={handlePesan} style={{ alignSelf: "flex-start", marginTop: "16px" }}>
+              Diskusikan Proyek Animasi <span className="btn-bergabung-navy-arrow">›</span>
+            </button>
           </div>
           <div className={`intro-mascot${introVisible ? " visible" : ""}`}>
             <div className="mascot-bg">
@@ -465,6 +421,87 @@ export default function LandingPage() {
                 <div>Tambahkan maskot<br />di /public/mascot.webp</div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* PRODUK & LAYANAN SECTION */}
+      <section className="produk-layanan-section" id="produk">
+
+        {/* Panel Kiri: The Problem */}
+        <div className="panel-produk">
+          <div className="panel-content">
+            <div className="panel-label">Tantangan</div>
+            <h2 className="panel-title">The Problem</h2>
+            <div className="problems-list">
+              {problems.map((problem) => {
+                const isActive = expandedProblem === problem.id;
+                return (
+                  <div key={problem.id} className={`problem-item${isActive ? " active" : ""}`}>
+                    <div
+                      className="problem-header"
+                      onClick={() => {
+                        if (window.innerWidth <= 768) {
+                          setExpandedProblem(isActive ? null : problem.id);
+                        }
+                      }}
+                    >
+                      <h3 className="problem-title">{problem.title}</h3>
+                      <button className="problem-toggle" aria-label="Toggle problem description">
+                        <span className="toggle-icon">›</span>
+                      </button>
+                    </div>
+                    <div className="problem-description-wrap">
+                      <div className="problem-description">
+                        {problem.description}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            
+            <div className="problem-mascot-wrapper">
+              <img src="/images/mari_caca.webp" alt="Mari Caca Mascot" className="problem-mascot" />
+            </div>
+          </div>
+        </div>
+
+        {/* Panel Kanan: Layanan Kami */}
+        <div className="panel-layanan">
+          <div className="panel-content">
+            <div className="panel-label">Solusi Kami</div>
+            <h2 className="panel-title">The Solution</h2>
+            <div className="solutions-list">
+              {solutions.map((solution) => {
+                const isActive = expandedSolution === solution.id;
+                return (
+                  <div key={solution.id} className={`solution-item${isActive ? " active" : ""}`}>
+                    <div
+                      className="solution-header"
+                      onClick={() => {
+                        if (window.innerWidth <= 768) {
+                          setExpandedSolution(isActive ? null : solution.id);
+                        }
+                      }}
+                    >
+                      <h3 className="solution-title">{solution.title}</h3>
+                      <button className="solution-toggle" aria-label="Toggle solution description">
+                        <span className="toggle-icon">›</span>
+                      </button>
+                    </div>
+                    <div className="solution-description-wrap">
+                      <div className="solution-description">
+                        {solution.description}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <button className="btn-bergabung-tosca" onClick={handlePesan}>
+              Diskusikan Proyek Animasi <span className="btn-bergabung-tosca-arrow">›</span>
+            </button>
           </div>
         </div>
       </section>
@@ -507,63 +544,6 @@ export default function LandingPage() {
               </div>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* PRODUK & LAYANAN SECTION */}
-      <section className="produk-layanan-section" id="produk">
-
-        {/* Panel Kiri: The Problem */}
-        <div className="panel-produk">
-          <div className="panel-content">
-            <div className="panel-label">Tantangan</div>
-            <h2 className="panel-title">The Problem</h2>
-            <div className="problems-list">
-              {problems.map((problem) => (
-                <div key={problem.id} className="problem-item">
-                  <div className="problem-header" onClick={() => setExpandedProblem(expandedProblem === problem.id ? null : problem.id)}>
-                    <h3 className="problem-title">{problem.title}</h3>
-                    <button className="problem-toggle" aria-label="Toggle problem description">
-                      {expandedProblem === problem.id ? "−" : "+"}
-                    </button>
-                  </div>
-                  {expandedProblem === problem.id && (
-                    <div className="problem-description">
-                      {problem.description}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Panel Kanan: Layanan Kami */}
-        <div className="panel-layanan">
-          <div className="panel-content">
-            <div className="panel-label">Solusi Kami</div>
-            <h2 className="panel-title">The Solution</h2>
-            <div className="solutions-list">
-              {solutions.map((solution) => (
-                <div key={solution.id} className="solution-item">
-                  <div className="solution-header" onClick={() => setExpandedSolution(expandedSolution === solution.id ? null : solution.id)}>
-                    <h3 className="solution-title">{solution.title}</h3>
-                    <button className="solution-toggle" aria-label="Toggle solution description">
-                      {expandedSolution === solution.id ? "−" : "+"}
-                    </button>
-                  </div>
-                  {expandedSolution === solution.id && (
-                    <div className="solution-description">
-                      {solution.description}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-            <button className="btn-bergabung-tosca" onClick={handlePesan}>
-              Diskusikan Proyek Animasi <span className="btn-bergabung-tosca-arrow">›</span>
-            </button>
-          </div>
         </div>
       </section>
 
@@ -865,44 +845,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="footer">
-        <div className="footer-texture-overlay"></div>
-        <div className="footer-wave">
-          <svg viewBox="0 0 1440 140" preserveAspectRatio="none">
-            <path className="wave-orange" d="M0,40 C240,120 480,-40 720,40 C960,-40 1200,120 1440,40 L1440,50 C1200,130 960,-30 720,50 C480,-30 240,130 0,50 Z" />
-            <path className="wave-tosca" d="M0,50 C240,130 480,-30 720,50 C960,-30 1200,130 1440,50 L1440,60 C1200,140 960,-20 720,60 C480,-20 240,140 0,60 Z" />
-            <path className="wave-bg" d="M0,60 C240,140 480,-20 720,60 C960,-20 1200,140 1440,60 L1440,145 L0,145 Z" />
-          </svg>
-        </div>
 
-        <div className="footer-flex-container">
-          <div className="footer-logo-wrap">
-            <Image src="/logo.webp" alt="Kidscenter Logo" width={200} height={60} onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }} />
-          </div>
-
-          <div className="footer-socials">
-            <a href="#" className="social-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-              <span>@kidscenter.id</span>
-            </a>
-            <a href="#" className="social-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
-              <span>Kids Center Indonesia</span>
-            </a>
-            <a href="#" className="social-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
-              <span>Kidscenter.id</span>
-            </a>
-          </div>
-
-          <div className="footer-mascot-wrap">
-            <Image src="/images/mascot-footer.webp" alt="Kidscenter Mascot" width={200} height={300} onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }} />
-          </div>
-        </div>
-
-        <p className="footer-copy">© 2026 <span>Kidscenter.id</span> — All rights reserved</p>
-      </footer>
 
       {/* POPUP TRAILER */}
       {popupOpen && selectedAnim && (

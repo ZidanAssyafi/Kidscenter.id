@@ -49,9 +49,9 @@ export default function LoginPage() {
 
       // Redirect to admin dashboard if user is admin
       if (data.user.role === "admin") {
-        router.push("/admin/dashboard");
+        window.location.href = "/admin/dashboard";
       } else {
-        router.push("/");
+        window.location.href = "/";
       }
     } catch (err: any) {
       setError(err.message || "Login gagal");

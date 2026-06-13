@@ -59,7 +59,7 @@ export default function ProfilePage() {
 
   const handleLogout = async () => {
     await logoutUser();
-    router.push("/");
+    window.location.href = "/";
   };
 
   const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -171,8 +171,7 @@ export default function ProfilePage() {
             </button>
           </div>
           
-          <h2 style={{ fontSize: 32, marginBottom: 4, fontWeight: 900, color: "var(--kc-navy, #2E2A5E)" }}>{user.name}</h2>
-          <p style={{ color: "var(--kc-navy, #2E2A5E)", fontWeight: 800, fontSize: 16 }}>@{user.username}</p>
+          <h2 style={{ fontSize: 32, marginBottom: 4, fontWeight: 900, color: "var(--kc-navy, #2E2A5E)" }}>@{user.username}</h2>
 
           <div className="profile-nav">
             <button

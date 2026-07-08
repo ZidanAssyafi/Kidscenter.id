@@ -841,6 +841,11 @@
   .order-items {
     font-size: 1rem;
   }
+  .chat-input-area button,
+  .comment-input-area button {
+    padding: 1rem;
+    font-size: 1.1rem;
+  }
 }
 
 

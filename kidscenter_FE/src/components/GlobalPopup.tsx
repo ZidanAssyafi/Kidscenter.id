@@ -21,14 +21,19 @@ export default function GlobalPopup() {
     return () => { document.body.style.overflow = ""; };
   }, [visible]);
 
+  const handleClose = () => {
+    setVisible(false);
+    setPopupData({ message: "", timestamp: 0 });
+  };
+
   if (!visible) return null;
 
   return (
-    <div className="global-popup-overlay" onClick={() => setVisible(false)}>
+    <div className="global-popup-overlay" onClick={handleClose}>
       <div className="global-popup-content" onClick={(e) => e.stopPropagation()}>
-        <button className="global-popup-close-btn" onClick={() => setVisible(false)}>✕</button>
+        <button className="global-popup-close-btn" onClick={handleClose}>✕</button>
         <p className="global-popup-message">{popupData.message}</p>
-        <button className="global-popup-btn" onClick={() => setVisible(false)}>OK</button>
+        <button className="global-popup-btn" onClick={handleClose}>OK</button>
       </div>
     </div>
   );

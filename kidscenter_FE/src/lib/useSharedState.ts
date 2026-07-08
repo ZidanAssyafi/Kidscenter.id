@@ -35,14 +35,13 @@ export function useSharedState<T>(key: string, initialValue: T): [T, (val: T | (
     };
   }, [key]);
 
-  // Wrapper function to update state and sync to localStorage
   const setSharedState = (value: T | ((prev: T) => T)) => {
     try {
       setState(prev => {
         const newValue = value instanceof Function ? value(prev) : value;
         window.localStorage.setItem(key, JSON.stringify(newValue));
         // Dispatch custom event for same-window updates
-        window.dispatchEvent(new Event("local-storage-sync"));
+        window.dispatchEvent(new CustomEvent("local-storage-sync", { detail: { key } }));
         return newValue;
       });
     } catch (error) {
@@ -52,7 +51,10 @@ export function useSharedState<T>(key: string, initialValue: T): [T, (val: T | (
 
   // Add event listener for same-window syncing
   useEffect(() => {
-    const handleLocalSync = () => {
+    const handleLocalSync = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail && customEvent.detail.key !== key) return;
+
       try {
         const item = window.localStorage.getItem(key);
         if (item) {

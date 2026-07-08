@@ -61,17 +61,7 @@ export default function Navbar() {
         <ul className="header-nav-links">
           <li><Link href="/">Home</Link></li>
           <li>
-            <Link 
-              href="/catalog"
-              prefetch={false}
-              onClick={(e) => {
-                if (!isLoggedIn) {
-                  e.preventDefault();
-                  setPesanPopupOpen(true);
-                  document.body.style.overflow = "hidden";
-                }
-              }}
-            >
+            <Link href="/catalog" prefetch={false}>
               Catalog
             </Link>
           </li>
@@ -127,14 +117,7 @@ export default function Navbar() {
             <Link 
               href="/catalog"
               prefetch={false}
-              onClick={(e) => {
-                setMobileMenuOpen(false);
-                if (!isLoggedIn) {
-                  e.preventDefault();
-                  setPesanPopupOpen(true);
-                  document.body.style.overflow = "hidden";
-                }
-              }}
+              onClick={() => setMobileMenuOpen(false)}
             >
               Catalog
             </Link>

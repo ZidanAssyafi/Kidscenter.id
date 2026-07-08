@@ -1,5 +1,5 @@
 "use client";
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import Link from "next/link";
 import { registerUser } from "@/lib/api";
 import { useRouter } from "next/navigation";
@@ -39,6 +39,13 @@ export default function RegisterPage() {
   const [serverError, setServerError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const router = useRouter();
+
+  useEffect(() => {
+    const token = sessionStorage.getItem("token") || localStorage.getItem("token");
+    if (token) {
+      router.push("/");
+    }
+  }, [router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setServerError("");

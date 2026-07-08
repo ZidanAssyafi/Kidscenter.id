@@ -656,4 +656,34 @@
     padding: 10px;
     font-size: 14px;
   }
+  .checkout-content {
+    padding: 2.5rem 1rem 1rem 1rem;
+  }
+  .popup-pesan-title {
+    font-size: 1.25rem;
+    margin-bottom: 1rem !important;
+  }
+  .checkout-items ul {
+    max-height: 120px;
+  }
+  .checkout-form-group textarea {
+    min-height: 60px !important;
+  }
+  .checkout-summary {
+    padding: 0.75rem !important;
+    margin-bottom: 1rem !important;
+  }
+  .checkout-payment img {
+    width: 100px !important;
+    height: 100px !important;
+  }
+}
+
+.checkout-content {
+  padding: 1.5rem 2rem;
+}
+
+.checkout-items ul {
+  max-height: 200px;
+  overflow-y: auto;
 }

@@ -347,7 +347,7 @@ export default function LandingPage() {
 
   const handlePesan = () => {
     if (isLoggedIn) {
-      window.location.href = "/catalog";
+      window.location.href = "/portal";
     } else {
       setPesanPopupOpen(true);
       document.body.style.overflow = "hidden";

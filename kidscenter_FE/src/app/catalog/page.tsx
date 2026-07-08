@@ -1,136 +1,19 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import "./catalog.css";
 
-// --- MOCK DATA ---
-const digitalProducts = [
-  {
-    id: "d1",
-    name: "Stiker WhatsApp Mari Caca A",
-    desc: "Kumpulan stiker lucu dan edukatif karakter Mari Caca untuk WhatsApp dan Line (Edisi A).",
-    price: 15000,
-    stock: "Tersedia",
-    type: "Digital Asset",
-    image: "/product/sticker-1.webp",
-  },
-  {
-    id: "d2",
-    name: "Stiker WhatsApp Mari Caca B",
-    desc: "Kumpulan stiker lucu dan edukatif karakter Mari Caca untuk WhatsApp dan Line (Edisi B).",
-    price: 15000,
-    stock: "Tersedia",
-    type: "Digital Asset",
-    image: "/product/sticker-2.webp",
-  },
-  {
-    id: "d3",
-    name: "Aset Karakter Resolusi Tinggi A",
-    desc: "File aset karakter Kidscenter transparan (PNG/SVG) untuk kebutuhan desain anak (Set A).",
-    price: 35000,
-    stock: "Tersedia",
-    type: "Digital Asset",
-    image: "/product/asset_digital.webp",
-  },
-  {
-    id: "d4",
-    name: "Aset Karakter Resolusi Tinggi B",
-    desc: "File aset karakter Kidscenter transparan (PNG/SVG) untuk kebutuhan desain anak (Set B).",
-    price: 35000,
-    stock: "Tersedia",
-    type: "Digital Asset",
-    image: "/product/asset_digital.webp",
-  },
-];
+import { useSharedState } from "@/lib/useSharedState";
+import { INITIAL_PRODUCTS, INITIAL_ORDERS } from "@/lib/initialData";
+import { compressImage } from "@/lib/imageUtils";
 
-const physicalProducts = [
-  {
-    id: "p1",
-    name: "Kaos Anak Petualang A",
-    desc: "Kaos katun premium bergambar Mari Caca (Desain A). Nyaman untuk aktivitas anak sehari-hari.",
-    price: 95000,
-    stock: "Sisa 12",
-    type: "Apparel",
-    image: "/product/kaos.webp",
-  },
-  {
-    id: "p2",
-    name: "Kaos Anak Petualang B",
-    desc: "Kaos katun premium bergambar Mari Caca (Desain B). Nyaman untuk aktivitas anak sehari-hari.",
-    price: 95000,
-    stock: "Sisa 8",
-    type: "Apparel",
-    image: "/product/kaos.webp",
-  },
-  {
-    id: "p3",
-    name: "Gantungan Kunci Kidscenter A",
-    desc: "Gantungan kunci akrilik tebal bergambar karakter-karakter lucu Kidscenter (Set A).",
-    price: 25000,
-    stock: "Sisa 45",
-    type: "Aksesoris",
-    image: "/product/gantungan_kunci.webp",
-  },
-  {
-    id: "p4",
-    name: "Gantungan Kunci Kidscenter B",
-    desc: "Gantungan kunci akrilik tebal bergambar karakter-karakter lucu Kidscenter (Set B).",
-    price: 25000,
-    stock: "Sisa 30",
-    type: "Aksesoris",
-    image: "/product/gantungan_kunci.webp",
-  },
-  {
-    id: "p5",
-    name: "Buku Cerita Petualangan Mari Caca A",
-    desc: "Buku cerita bergambar (Seri A) penuh pesan moral untuk menemani waktu tidur anak.",
-    price: 55000,
-    stock: "Sisa 20",
-    type: "Buku Cerita",
-    image: "/product/buku-1.webp",
-  },
-  {
-    id: "p6",
-    name: "Buku Cerita Petualangan Mari Caca B",
-    desc: "Buku cerita bergambar (Seri B) penuh pesan moral untuk menemani waktu tidur anak.",
-    price: 55000,
-    stock: "Sisa 15",
-    type: "Buku Cerita",
-    image: "/product/buku-2.webp",
-  },
-];
-
-const downloads = [
-  {
-    id: "dl1",
-    title: "Lembar Mewarnai Hutan Ajaib A",
-    category: "Coloring Sheets",
-    thumbnail: "/product/coloring_sheets.webp",
-    pdfFile: "mewarnai-hutan-ajaib-a.pdf",
-  },
-  {
-    id: "dl2",
-    title: "Lembar Mewarnai Hutan Ajaib B",
-    category: "Coloring Sheets",
-    thumbnail: "/product/coloring_sheets.webp",
-    pdfFile: "mewarnai-hutan-ajaib-b.pdf",
-  },
-  {
-    id: "dl3",
-    title: "Papercraft Karakter Bintang A",
-    category: "Papercraft",
-    thumbnail: "/product/papercraft.webp",
-    pdfFile: "papercraft-bintang-a.pdf",
-  },
-  {
-    id: "dl4",
-    title: "Papercraft Karakter Bintang B",
-    category: "Papercraft",
-    thumbnail: "/product/papercraft.webp",
-    pdfFile: "papercraft-bintang-b.pdf",
-  },
-];
+const getImgSrc = (img: string) => {
+  if (!img) return "";
+  if (img.startsWith("/") || img.startsWith("data:") || img.startsWith("http")) return img;
+  return `/images/${img}`;
+};
 
 interface CartItem {
   product: any;
@@ -138,11 +21,35 @@ interface CartItem {
 }
 
 export default function CatalogPage() {
+  const [products] = useSharedState("kc_products", INITIAL_PRODUCTS);
+  const digitalProducts = products.filter(p => p.category === "Digital" && p.type === "Digital Asset");
+  const physicalProducts = products.filter(p => p.category === "Fisik");
+  const downloads = products.filter(p => p.category === "Digital" && (p.type === "Coloring Sheets" || p.type === "Papercraft"));
+
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loginPopupOpen, setLoginPopupOpen] = useState(false);
+  const [checkoutPopupOpen, setCheckoutPopupOpen] = useState(false);
+  const [address, setAddress] = useState("");
+  const [paymentProof, setPaymentProof] = useState<string | null>(null);
+  const [catalogOrders, setCatalogOrders] = useSharedState("kc_orders", INITIAL_ORDERS);
+
+  useEffect(() => {
+    const token = sessionStorage.getItem("token") || localStorage.getItem("token");
+    const user = sessionStorage.getItem("user") || localStorage.getItem("user");
+    if (token && user) {
+      setIsLoggedIn(true);
+    }
+  }, []);
 
   const addToCart = (product: any) => {
+    if (!isLoggedIn) {
+      setLoginPopupOpen(true);
+      document.body.style.overflow = "hidden";
+      return;
+    }
     setCart((prev) => {
       const existing = prev.find((item) => item.product.id === product.id);
       if (existing) {
@@ -175,9 +82,35 @@ export default function CatalogPage() {
 
   const handleCheckout = () => {
     if (cart.length === 0) return;
-    alert("Proses Checkout Berhasil! Terima kasih telah berbelanja di Kidscenter.");
+    setIsCartOpen(false);
+    setCheckoutPopupOpen(true);
+  };
+
+  const submitCheckout = () => {
+    const newOrder = {
+      id: `ORD-${Date.now()}`,
+      customer: "User Test", // Mock user
+      type: hasPhysical ? "Fisik" : "Digital",
+      date: new Date().toLocaleDateString("id-ID", { day: '2-digit', month: 'short', year: 'numeric' }),
+      status: "Menunggu Pembayaran",
+      total: totalPrice + ongkir,
+      resi: "",
+      paymentProof: paymentProof || "",
+      items: cart.map(item => ({
+        name: item.product.name || item.product.title,
+        quantity: item.quantity,
+        price: item.product.price,
+        image: item.product.image || item.product.thumbnail
+      }))
+    };
+    setCatalogOrders([...catalogOrders, newOrder]);
+
+    alert("Pesanan berhasil dibuat! Kami akan segera memprosesnya.");
+    setCheckoutPopupOpen(false);
     setCart([]);
     setIsCartOpen(false);
+    setAddress("");
+    setPaymentProof(null);
   };
 
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -185,6 +118,9 @@ export default function CatalogPage() {
     (sum, item) => sum + item.product.price * item.quantity,
     0
   );
+
+  const hasPhysical = cart.some(item => item.product.type && item.product.type !== "Digital Asset");
+  const ongkir = hasPhysical ? 15000 : 0;
 
   return (
     <div className="catalog-root">
@@ -215,7 +151,7 @@ export default function CatalogPage() {
                 <div className="product-img-wrapper">
                   <span className="product-badge">{p.type}</span>
                   {/* Using standard img to avoid Next Image errors if file doesn't exist yet */}
-                  <img src={p.image.startsWith("/") ? p.image : `/images/${p.image}`} alt={p.name} className="product-img" />
+                  <img src={getImgSrc(p.image)} alt={p.name} className="product-img" />
                 </div>
                 <div className="product-info">
                   <h3 className="product-name">{p.name}</h3>
@@ -244,7 +180,7 @@ export default function CatalogPage() {
               <div key={p.id} className="product-card" onClick={() => setSelectedProduct(p)}>
                 <div className="product-img-wrapper">
                   <span className="product-badge">{p.type}</span>
-                  <img src={p.image.startsWith("/") ? p.image : `/images/${p.image}`} alt={p.name} className="product-img" />
+                  <img src={getImgSrc(p.image)} alt={p.name} className="product-img" />
                 </div>
                 <div className="product-info">
                   <h3 className="product-name">{p.name}</h3>
@@ -273,13 +209,21 @@ export default function CatalogPage() {
               <div key={d.id} className="product-card" onClick={() => setSelectedProduct(d)}>
                 <div className="product-img-wrapper">
                   <span className="product-badge" style={{ background: "var(--kc-yellow)", color: "var(--kc-navy)" }}>
-                    {d.category}
+                    {d.type || d.category}
                   </span>
-                  <img src={d.thumbnail.startsWith("/") ? d.thumbnail : `/images/${d.thumbnail}`} alt={d.title} className="product-img" />
+                  <img src={getImgSrc(d.image || "")} alt={d.name || ""} className="product-img" />
                 </div>
                 <div className="product-info">
-                  <h3 className="product-name">{d.title}</h3>
-                  <button className="btn-download" onClick={(e) => { e.stopPropagation(); alert(`Mengunduh ${d.pdfFile}...`); }}>
+                  <h3 className="product-name">{d.name || ""}</h3>
+                  <button className="btn-download" onClick={(e) => {
+                    e.stopPropagation();
+                    if (!isLoggedIn) {
+                      setLoginPopupOpen(true);
+                      document.body.style.overflow = "hidden";
+                    } else {
+                      alert(`Mengunduh ${d.pdfFile}...`);
+                    }
+                  }}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                       <polyline points="7 10 12 15 17 10"></polyline>
@@ -310,10 +254,8 @@ export default function CatalogPage() {
             </button>
             <div className="modal-img-col">
               <img
-                src={(selectedProduct.image || selectedProduct.thumbnail).startsWith("/")
-                  ? (selectedProduct.image || selectedProduct.thumbnail)
-                  : `/images/${selectedProduct.image || selectedProduct.thumbnail}`}
-                alt={selectedProduct.name || selectedProduct.title}
+                src={getImgSrc(selectedProduct.image || "")}
+                alt={selectedProduct.name || ""}
                 className="modal-img"
               />
             </div>
@@ -324,7 +266,7 @@ export default function CatalogPage() {
               >
                 {selectedProduct.type || selectedProduct.category}
               </span>
-              <h2 className="modal-title">{selectedProduct.name || selectedProduct.title}</h2>
+              <h2 className="modal-title">{selectedProduct.name || ""}</h2>
               <p className="modal-desc">
                 {selectedProduct.desc || `Akses PDF resolusi tinggi untuk aktivitas kreatif bersama anak. File: ${selectedProduct.pdfFile}`}
               </p>
@@ -361,8 +303,13 @@ export default function CatalogPage() {
                 <button
                   className="btn-download"
                   onClick={() => {
-                    alert(`Mengunduh ${selectedProduct.pdfFile}...`);
-                    setSelectedProduct(null);
+                    if (!isLoggedIn) {
+                      setLoginPopupOpen(true);
+                      document.body.style.overflow = "hidden";
+                    } else {
+                      alert(`Mengunduh ${selectedProduct.pdfFile}...`);
+                      setSelectedProduct(null);
+                    }
                   }}
                   style={{ marginTop: "auto" }}
                 >
@@ -408,7 +355,7 @@ export default function CatalogPage() {
           ) : (
             cart.map((item) => (
               <div key={item.product.id} className="cart-item">
-                <img src={item.product.image.startsWith("/") ? item.product.image : `/images/${item.product.image}`} alt={item.product.name} className="cart-item-img" />
+                <img src={getImgSrc(item.product.image || "")} alt={item.product.name} className="cart-item-img" />
                 <div className="cart-item-info">
                   <h4 className="cart-item-name">{item.product.name}</h4>
                   <p className="cart-item-price">Rp {item.product.price.toLocaleString("id-ID")}</p>
@@ -444,6 +391,114 @@ export default function CatalogPage() {
           </button>
         </div>
       </div>
+
+      {/* POPUP CHECKOUT */}
+      {checkoutPopupOpen && (
+        <div className="popup-overlay">
+          <div className="popup-backdrop" onClick={() => setCheckoutPopupOpen(false)} />
+          <div className="popup-box" style={{ maxWidth: "600px", width: "90%", maxHeight: "90vh", overflowY: "auto" }}>
+            <button className="popup-close" onClick={() => setCheckoutPopupOpen(false)}>✕</button>
+            <div className="checkout-content">
+              <h2 className="popup-pesan-title" style={{ textAlign: "center", marginBottom: "1.5rem" }}>Checkout Pesanan</h2>
+
+              <div className="checkout-items" style={{ marginBottom: "1.5rem" }}>
+                <h3 style={{ fontSize: "1.1rem", marginBottom: "0.5rem" }}>Daftar Produk:</h3>
+                <ul style={{ listStyle: "none", padding: 0 }}>
+                  {cart.map((item, idx) => (
+                    <li key={idx} style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem", borderBottom: "1px dashed var(--kc-border)", paddingBottom: "0.5rem" }}>
+                      <span>{item.quantity}x {item.product.name}</span>
+                      <span style={{ fontWeight: 600 }}>Rp {(item.product.price * item.quantity).toLocaleString("id-ID")}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {hasPhysical && (
+                <div className="checkout-form-group" style={{ marginBottom: "1.5rem" }}>
+                  <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 700 }}>Alamat Lengkap (Beserta Kode Pos)</label>
+                  <textarea
+                    className="portal-textarea"
+                    style={{ width: "100%", padding: "0.75rem", borderRadius: "8px", border: "1px solid var(--kc-border)", minHeight: "80px" }}
+                    rows={3}
+                    placeholder="Masukkan alamat pengiriman lengkap..."
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                  />
+                </div>
+              )}
+
+              <div className="checkout-summary" style={{ marginBottom: "1.5rem", padding: "1rem", background: "var(--kc-bg-alt)", borderRadius: "8px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
+                  <span>Subtotal:</span>
+                  <span>Rp {totalPrice.toLocaleString("id-ID")}</span>
+                </div>
+                {hasPhysical && (
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
+                    <span>Ongkos Kirim:</span>
+                    <span>Rp {ongkir.toLocaleString("id-ID")}</span>
+                  </div>
+                )}
+                <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 800, fontSize: "1.2rem", marginTop: "1rem", borderTop: "1px solid var(--kc-border)", paddingTop: "1rem" }}>
+                  <span>Total Bayar:</span>
+                  <span style={{ color: "var(--kc-cyan)" }}>Rp {(totalPrice + ongkir).toLocaleString("id-ID")}</span>
+                </div>
+              </div>
+
+              <div className="checkout-payment" style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+                <h3 style={{ fontSize: "1.1rem", marginBottom: "0.5rem" }}>Scan QRIS untuk Membayar</h3>
+                <div style={{ background: "white", padding: "1rem", display: "inline-block", borderRadius: "12px", border: "2px solid var(--kc-border)", marginBottom: "1rem" }}>
+                  <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=KidscenterPayment" alt="QRIS" style={{ width: 150, height: 150 }} />
+                </div>
+
+                <div style={{ textAlign: "left" }}>
+                  <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 700 }}>Upload Bukti Pembayaran</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        compressImage(file, (dataUrl) => {
+                          setPaymentProof(dataUrl);
+                        });
+                      }
+                    }}
+                    style={{ width: "100%", padding: "0.5rem", border: "1px dashed var(--kc-border)", borderRadius: "8px" }}
+                  />
+                </div>
+              </div>
+
+              <button
+                className="btn-checkout"
+                style={{ width: "100%", opacity: ((hasPhysical && !address.trim()) || !paymentProof) ? 0.5 : 1, marginTop: "1rem" }}
+                disabled={(hasPhysical && !address.trim()) || !paymentProof}
+                onClick={submitCheckout}
+              >
+                Selesai
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* POPUP PESAN SEKARANG */}
+      {loginPopupOpen && (
+        <div className="popup-overlay">
+          <div className="popup-backdrop" onClick={() => { setLoginPopupOpen(false); document.body.style.overflow = ""; }} />
+          <div className="popup-box">
+            <button className="popup-close" onClick={() => { setLoginPopupOpen(false); document.body.style.overflow = ""; }} aria-label="Tutup">✕</button>
+            <div className="popup-pesan">
+              <h2 className="popup-pesan-title">Masuk dulu, yuk!</h2>
+              <p className="popup-pesan-desc">
+                Untuk melakukan pemesanan atau mengunduh aset, kamu perlu <strong>masuk ke akun</strong> terlebih dahulu. Proses cepat dan gratis!
+              </p>
+              <Link href="/login" className="btn-popup-login" prefetch={false} onClick={() => { setLoginPopupOpen(false); document.body.style.overflow = ""; }}>Masuk Sekarang</Link>
+              <p className="popup-gate-alt">Belum punya akun? <Link href="/register" prefetch={false} onClick={() => { setLoginPopupOpen(false); document.body.style.overflow = ""; }}>Daftar gratis di sini</Link></p>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

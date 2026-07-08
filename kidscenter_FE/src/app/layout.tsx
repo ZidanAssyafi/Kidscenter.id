@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
 import "./globals.css";
 import "./landing.css";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import ConditionalLayout from "@/components/ConditionalLayout";
 
 const nunito = Nunito({
   subsets: ["latin"],
@@ -27,9 +26,7 @@ export default function RootLayout({
   return (
     <html lang="id" className={nunito.variable} data-theme="light" data-scroll-behavior="smooth">
       <body className="min-h-full flex flex-col">
-        <Navbar />
-        {children}
-        <Footer />
+        <ConditionalLayout>{children}</ConditionalLayout>
       </body>
     </html>
   );

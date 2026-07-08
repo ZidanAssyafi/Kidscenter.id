@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { loginUser } from "@/lib/api";
@@ -10,6 +10,13 @@ import PasswordInput from "@/components/PasswordInput";
 
 export default function LoginPage() {
   const router = useRouter();
+
+  useEffect(() => {
+    const token = sessionStorage.getItem("token") || localStorage.getItem("token");
+    if (token) {
+      router.push("/");
+    }
+  }, [router]);
 
   const [form, setForm] = useState({
     identifier: "",

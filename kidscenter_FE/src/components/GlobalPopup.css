@@ -1,0 +1,116 @@
+.global-popup-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(46, 42, 94, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 2rem;
+  animation: popupOverlayIn 0.3s ease;
+}
+
+@keyframes popupOverlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.global-popup-content {
+  background: var(--kc-surface);
+  border-radius: 24px;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 24px 50px rgba(0,0,0,0.2);
+  position: relative;
+  padding: 2.5rem;
+  border: 1px solid var(--kc-border);
+  animation: popupModalIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+@keyframes popupModalIn {
+  from { transform: scale(0.95) translateY(20px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.global-popup-close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: var(--kc-bg-alt);
+  border: 1px solid var(--kc-border);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: var(--kc-text);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.global-popup-close-btn:hover {
+  background: var(--kc-error);
+  color: white;
+  border-color: var(--kc-error);
+  transform: rotate(90deg);
+}
+
+.global-popup-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.4rem;
+  color: var(--kc-navy);
+  margin-bottom: 1rem;
+}
+
+.global-popup-message {
+  color: var(--kc-text);
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+.global-popup-btn {
+  background: var(--kc-btn-primary);
+  color: var(--kc-btn-text);
+  border: none;
+  padding: 0.8rem 2.5rem;
+  border-radius: 50px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+}
+
+.global-popup-btn:hover {
+  background: var(--kc-btn-primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(255,177,27,0.28);
+}
+
+@media (max-width: 640px) {
+  .global-popup-overlay {
+    padding: 1rem;
+  }
+  .global-popup-content {
+    padding: 1.5rem;
+    border-radius: 16px;
+    max-width: 90vw;
+  }
+  .global-popup-message {
+    font-size: 1rem;
+  }
+  .global-popup-btn {
+    width: 100%;
+    padding: 0.8rem 1rem;
+  }
+}

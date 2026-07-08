@@ -6,6 +6,7 @@ import "../admin.css";
 import { useSharedState } from "@/lib/useSharedState";
 import { INITIAL_PROJECTS, INITIAL_PRODUCTS, INITIAL_ORDERS } from "@/lib/initialData";
 import { compressImage } from "@/lib/imageUtils";
+import { showPopup } from "@/lib/popupUtils";
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -67,6 +68,15 @@ export default function AdminDashboard() {
   const [orders, setOrders] = useSharedState("kc_orders", INITIAL_ORDERS);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
 
+  useEffect(() => {
+    if (selectedJasa || selectedOrder) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [selectedJasa, selectedOrder]);
+
   if (!isAuthorized) {
     return null; // Don't render anything while checking authorization
   }
@@ -92,7 +102,7 @@ export default function AdminDashboard() {
   const handleSaveJasaResult = () => {
     setJasaProjects(prev => prev.map(p => p.id === selectedJasa.id ? { ...p, resultLink: jasaResultLink } : p));
     setSelectedJasa({ ...selectedJasa, resultLink: jasaResultLink });
-    alert("Hasil pekerjaan berhasil disimpan!");
+    showPopup("Hasil pekerjaan berhasil disimpan!");
   };
 
   // --- Handlers for Produk ---
@@ -143,7 +153,7 @@ export default function AdminDashboard() {
     const resi = (e.target as any).resi.value;
     setOrders(prev => prev.map(o => o.id === selectedOrder.id ? { ...o, resi, status: "Dikirim" } : o));
     setSelectedOrder({ ...selectedOrder, resi, status: "Dikirim" });
-    alert("Resi berhasil diupdate dan status menjadi Dikirim.");
+    showPopup("Resi berhasil diupdate dan status menjadi Dikirim.");
   };
 
   return (

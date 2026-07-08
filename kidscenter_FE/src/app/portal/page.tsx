@@ -6,6 +6,7 @@ import "./portal.css";
 import { useSharedState } from "@/lib/useSharedState";
 import { INITIAL_PROJECTS, INITIAL_ORDERS } from "@/lib/initialData";
 import { compressImage } from "@/lib/imageUtils";
+import { showPopup } from "@/lib/popupUtils";
 
 // Utility to format seconds to MM:SS
 const formatTime = (timeInSeconds: number) => {
@@ -49,6 +50,15 @@ export default function PortalPage() {
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
   const [catalogOrders, setCatalogOrders] = useSharedState("kc_orders", INITIAL_ORDERS);
 
+  useEffect(() => {
+    if (selectedProject || selectedInvoice) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [selectedProject, selectedInvoice]);
+
   const handleTimeUpdate = () => {
     if (videoRef.current) {
       setCurrentTime(videoRef.current.currentTime);
@@ -91,7 +101,7 @@ export default function PortalPage() {
         document.body.removeChild(link);
       } catch (err) {
         console.error("Error generating invoice", err);
-        alert("Gagal mengunduh invoice.");
+        showPopup("Gagal mengunduh invoice.");
       }
     }
   };
@@ -110,7 +120,7 @@ export default function PortalPage() {
 
   const handleSubmitRequest = (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Permintaan animasi berhasil dikirim!");
+    showPopup("Permintaan animasi berhasil dikirim!");
     setTitle("");
     setDescription("");
     setActiveTab("active_projects");
@@ -120,7 +130,7 @@ export default function PortalPage() {
     if (project.status === "Briefing dan Pembayaran" || project.status === "Pembayaran ditolak" || project.status === "In Review" || project.status === "Done") {
       setSelectedProject(project);
     } else {
-      alert(`Proyek ini masih dalam tahap ${project.status}. Tim kami sedang memproduksinya, kami akan mengabari jika sudah siap direview.`);
+      showPopup(`Proyek ini masih dalam tahap ${project.status}. Tim kami sedang memproduksinya, kami akan mengabari jika sudah siap direview.`);
     }
   };
 
@@ -133,7 +143,7 @@ export default function PortalPage() {
       setProjects(projects.map(p =>
         p.id === selectedProject.id ? { ...p, status: "Done" } : p
       ));
-      alert("Proyek telah disetujui! Memindahkan ke kolom Done...");
+      showPopup("Proyek telah disetujui! Memindahkan ke kolom Done...");
       closeModal();
     }
   };
@@ -147,6 +157,13 @@ export default function PortalPage() {
         setSelectedProject(updatedProject);
       });
     }
+  };
+
+  const handleOrderReceived = (orderId: string) => {
+    setCatalogOrders(catalogOrders.map((o: any) => 
+      o.id === orderId ? { ...o, status: "Selesai" } : o
+    ));
+    showPopup(`Pesanan ${orderId} telah diterima dan statusnya kini menjadi Selesai.`);
   };
 
   return (
@@ -251,7 +268,7 @@ export default function PortalPage() {
             Pantau status pesanan merchandise dan aset digital Anda di sini.
           </p>
           <div className="order-list">
-            {catalogOrders.map(order => (
+            {catalogOrders.map((order: any) => (
               <div key={order.id} className="order-card">
                 <div className="order-header">
                   <span className="order-id">{order.id}</span>
@@ -286,9 +303,11 @@ export default function PortalPage() {
                 <div className="order-footer" style={{ gap: "0.75rem", flexWrap: "wrap" }}>
                   <button className="btn-order-action secondary" onClick={() => setSelectedInvoice(order)}>Detail</button>
                   {order.type === "Fisik" ? (
-                    <button className="btn-order-action" onClick={() => alert(`Pesanan ${order.id} diterima!`)}>Pesanan Diterima</button>
+                    order.status !== "Selesai" && (
+                      <button className="btn-order-action" onClick={() => handleOrderReceived(order.id)}>Pesanan Diterima</button>
+                    )
                   ) : (
-                    <button className="btn-order-action" onClick={() => alert("Mengunduh file...")}>Download Produk</button>
+                    <button className="btn-order-action" onClick={() => showPopup("Mengunduh file...")}>Download Produk</button>
                   )}
                 </div>
               </div>
@@ -420,7 +439,7 @@ export default function PortalPage() {
               <div style={{ textAlign: "center", padding: "3rem 1rem" }}>
                 <h3 style={{ color: "var(--kc-text)", fontSize: "1.5rem", marginBottom: "1rem", fontFamily: "'Fredoka One', cursive" }}>Proyek Selesai! 🎉</h3>
                 <p style={{ color: "var(--kc-text-muted)", marginBottom: "2rem", fontWeight: "600" }}>Animasi Anda telah selesai diproduksi dan siap digunakan.</p>
-                <button className="download-final-btn" onClick={() => alert("File video sedang diunduh...")}>
+                <button className="download-final-btn" onClick={() => showPopup("File video sedang diunduh...")}>
                   ⬇ Unduh File Final
                 </button>
               </div>

@@ -8,6 +8,7 @@ import "./catalog.css";
 import { useSharedState } from "@/lib/useSharedState";
 import { INITIAL_PRODUCTS, INITIAL_ORDERS } from "@/lib/initialData";
 import { compressImage } from "@/lib/imageUtils";
+import { showPopup } from "@/lib/popupUtils";
 
 const getImgSrc = (img: string) => {
   if (!img) return "";
@@ -43,6 +44,15 @@ export default function CatalogPage() {
       setIsLoggedIn(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (selectedProduct || isCartOpen || checkoutPopupOpen || loginPopupOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [selectedProduct, isCartOpen, checkoutPopupOpen, loginPopupOpen]);
 
   const addToCart = (product: any) => {
     if (!isLoggedIn) {
@@ -105,7 +115,7 @@ export default function CatalogPage() {
     };
     setCatalogOrders([...catalogOrders, newOrder]);
 
-    alert("Pesanan berhasil dibuat! Kami akan segera memprosesnya.");
+    showPopup("Pesanan berhasil dibuat! Kami akan segera memprosesnya.");
     setCheckoutPopupOpen(false);
     setCart([]);
     setIsCartOpen(false);
@@ -221,7 +231,7 @@ export default function CatalogPage() {
                       setLoginPopupOpen(true);
                       document.body.style.overflow = "hidden";
                     } else {
-                      alert(`Mengunduh ${d.pdfFile}...`);
+                      showPopup(`Mengunduh ${d.pdfFile}...`);
                     }
                   }}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -307,7 +317,7 @@ export default function CatalogPage() {
                       setLoginPopupOpen(true);
                       document.body.style.overflow = "hidden";
                     } else {
-                      alert(`Mengunduh ${selectedProduct.pdfFile}...`);
+                      showPopup(`Mengunduh ${selectedProduct.pdfFile}...`);
                       setSelectedProduct(null);
                     }
                   }}

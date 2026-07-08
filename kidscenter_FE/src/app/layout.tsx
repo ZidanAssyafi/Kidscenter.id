@@ -3,6 +3,7 @@ import { Nunito } from "next/font/google";
 import "./globals.css";
 import "./landing.css";
 import ConditionalLayout from "@/components/ConditionalLayout";
+import GlobalPopup from "@/components/GlobalPopup";
 
 const nunito = Nunito({
   subsets: ["latin"],
@@ -26,7 +27,10 @@ export default function RootLayout({
   return (
     <html lang="id" className={nunito.variable} data-theme="light" data-scroll-behavior="smooth">
       <body className="min-h-full flex flex-col">
-        <ConditionalLayout>{children}</ConditionalLayout>
+        <ConditionalLayout>
+          {children}
+          <GlobalPopup />
+        </ConditionalLayout>
       </body>
     </html>
   );

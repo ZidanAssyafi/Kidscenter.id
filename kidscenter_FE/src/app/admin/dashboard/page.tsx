@@ -4,9 +4,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import "../admin.css";
 import { useSharedState } from "@/lib/useSharedState";
-import { INITIAL_PROJECTS, INITIAL_PRODUCTS, INITIAL_ORDERS } from "@/lib/initialData";
+import { INITIAL_PROJECTS, INITIAL_ORDERS } from "@/lib/initialData";
 import { compressImage } from "@/lib/imageUtils";
 import { showPopup } from "@/lib/popupUtils";
+import { getProducts, createProduct, updateProductData, deleteProduct, getAllOrders, updateOrderData, deleteOrderData, getAllProjects, updateProjectData } from "@/lib/api";
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -25,7 +26,7 @@ export default function AdminDashboard() {
     
     try {
       const user = JSON.parse(userStr);
-      if (user.role !== "admin") {
+      if (user.role?.toLowerCase() !== "admin") {
         router.push("/");
       } else {
         setIsAuthorized(true);
@@ -35,11 +36,26 @@ export default function AdminDashboard() {
     }
   }, [router]);
 
-  // Mock Data: Pemesanan Jasa Animasi
-  const [jasaProjects, setJasaProjects] = useSharedState("kc_projects", INITIAL_PROJECTS);
+  // Real Data: Pemesanan Jasa Animasi
+  const [jasaProjects, setJasaProjects] = useState<any[]>([]);
   const [selectedJasa, setSelectedJasa] = useState<any>(null);
   const [jasaResultLink, setJasaResultLink] = useState("");
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (isAuthorized) {
+      fetchProjects();
+    }
+  }, [isAuthorized]);
+
+  const fetchProjects = async () => {
+    try {
+      const data = await getAllProjects();
+      setJasaProjects(data);
+    } catch (error: any) {
+      showPopup(error.message || "Gagal mengambil data proyek animasi");
+    }
+  };
   
   // Mock Comments for In Review
   const [newReviewComment, setNewReviewComment] = useState("");
@@ -58,15 +74,45 @@ export default function AdminDashboard() {
     return `${m}:${s}`;
   };
 
-  // Mock Data: Katalog Produk
-  const [products, setProducts] = useSharedState("kc_products", INITIAL_PRODUCTS);
+  // Real Data: Katalog Produk
+  const [products, setProducts] = useState<any[]>([]);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [productForm, setProductForm] = useState({ name: "", price: "", type: "Fisik", stock: "", image: "", desc: "" });
 
-  // Mock Data: Pesanan Masuk
-  const [orders, setOrders] = useSharedState("kc_orders", INITIAL_ORDERS);
+  useEffect(() => {
+    if (isAuthorized) {
+      fetchProducts();
+    }
+  }, [isAuthorized]);
+
+  const fetchProducts = async () => {
+    try {
+      const data = await getProducts();
+      setProducts(data);
+    } catch (error: any) {
+      showPopup(error.message || "Gagal mengambil data produk");
+    }
+  };
+
+  // Real Data: Pesanan Masuk
+  const [orders, setOrders] = useState<any[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
+
+  useEffect(() => {
+    if (isAuthorized) {
+      fetchOrders();
+    }
+  }, [isAuthorized]);
+
+  const fetchOrders = async () => {
+    try {
+      const data = await getAllOrders();
+      setOrders(data);
+    } catch (error: any) {
+      showPopup(error.message || "Gagal mengambil data pesanan");
+    }
+  };
 
   useEffect(() => {
     if (selectedJasa || selectedOrder) {
@@ -82,27 +128,45 @@ export default function AdminDashboard() {
   }
 
   // --- Handlers for Jasa Animasi ---
-  const handleUpdateJasaStatus = (id: string, newStatus: string) => {
-    setJasaProjects(jasaProjects.map(p => p.id === id ? { ...p, status: newStatus } : p));
-    if (selectedJasa && selectedJasa.id === id) {
-      setSelectedJasa({ ...selectedJasa, status: newStatus });
+  const handleUpdateJasaStatus = async (id: string, newStatus: string) => {
+    try {
+      await updateProjectData(id, { status: newStatus });
+      setJasaProjects(jasaProjects.map(p => p.id === id ? { ...p, status: newStatus } : p));
+      if (selectedJasa && selectedJasa.id === id) {
+        setSelectedJasa({ ...selectedJasa, status: newStatus });
+      }
+      showPopup("Status proyek berhasil diupdate!");
+    } catch (error: any) {
+      showPopup(error.message || "Gagal mengupdate status proyek");
     }
   };
-  const handleAdminSendChat = () => {
+
+  const handleAdminSendChat = async () => {
     if (!adminChatMessage.trim() || !selectedJasa) return;
     const newMessage = { id: Date.now(), sender: 'Admin', text: adminChatMessage, role: 'admin' };
-    const updatedProject = {
-      ...selectedJasa,
-      chatMessages: [...(selectedJasa.chatMessages || []), newMessage]
-    };
-    setJasaProjects(jasaProjects.map(p => p.id === selectedJasa.id ? updatedProject : p));
-    setSelectedJasa(updatedProject);
-    setAdminChatMessage("");
+    const newChatMessages = [...(selectedJasa.chatMessages || []), newMessage];
+    
+    try {
+      await updateProjectData(selectedJasa.id, { chat_messages: newChatMessages });
+      const updatedProject = { ...selectedJasa, chatMessages: newChatMessages };
+      setJasaProjects(jasaProjects.map(p => p.id === selectedJasa.id ? updatedProject : p));
+      setSelectedJasa(updatedProject);
+      setAdminChatMessage("");
+    } catch (error: any) {
+      showPopup("Gagal mengirim chat admin");
+    }
   };
-  const handleSaveJasaResult = () => {
-    setJasaProjects(prev => prev.map(p => p.id === selectedJasa.id ? { ...p, resultLink: jasaResultLink } : p));
-    setSelectedJasa({ ...selectedJasa, resultLink: jasaResultLink });
-    showPopup("Hasil pekerjaan berhasil disimpan!");
+
+  const handleSaveJasaResult = async () => {
+    if (!selectedJasa) return;
+    try {
+      await updateProjectData(selectedJasa.id, { result_link: jasaResultLink });
+      setJasaProjects(prev => prev.map(p => p.id === selectedJasa.id ? { ...p, resultLink: jasaResultLink } : p));
+      setSelectedJasa({ ...selectedJasa, resultLink: jasaResultLink });
+      showPopup("Hasil pekerjaan berhasil disimpan!");
+    } catch (error: any) {
+      showPopup("Gagal menyimpan hasil pekerjaan");
+    }
   };
 
   // --- Handlers for Produk ---
@@ -113,23 +177,45 @@ export default function AdminDashboard() {
   };
   const openEditProduct = (p: any) => {
     setEditingProduct(p);
-    setProductForm({ name: p.name, price: p.price.toString(), type: p.type, stock: p.stock.toString(), image: p.image, desc: p.desc });
+    setProductForm({ name: p.name, price: p.price?.toString() || "0", type: p.category || p.type || "Fisik", stock: p.stock?.toString() || "0", image: p.image || "", desc: p.description || p.desc || "" });
     setIsProductModalOpen(true);
   };
-  const handleDeleteProduct = (id: string) => {
+  const handleDeleteProduct = async (id: string) => {
     if(confirm("Yakin ingin menghapus produk ini?")) {
-      setProducts(products.filter(p => p.id !== id));
+      try {
+        await deleteProduct(id);
+        fetchProducts();
+        showPopup("Produk berhasil dihapus");
+      } catch (error: any) {
+        showPopup(error.message || "Gagal menghapus produk");
+      }
     }
   };
-  const handleSaveProduct = (e: React.FormEvent) => {
+  const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    if(editingProduct) {
-      setProducts(products.map(p => p.id === editingProduct.id ? { ...p, ...productForm, price: parseInt(productForm.price), stock: productForm.stock.toString() } : p));
-    } else {
-      const newProd = { id: `PROD-${Date.now()}`, ...productForm, category: productForm.type, price: parseInt(productForm.price), stock: productForm.stock.toString() };
-      setProducts([newProd, ...products]);
+    try {
+      const payload = {
+        name: productForm.name,
+        price: parseInt(productForm.price),
+        category: productForm.type,
+        stock: parseInt(productForm.stock),
+        description: productForm.desc,
+        image: productForm.image
+      };
+
+      if (editingProduct) {
+        await updateProductData(editingProduct.id, payload);
+        showPopup("Produk berhasil diperbarui");
+      } else {
+        await createProduct(payload);
+        showPopup("Produk berhasil ditambahkan");
+      }
+      
+      setIsProductModalOpen(false);
+      fetchProducts();
+    } catch (error: any) {
+      showPopup(error.message || "Gagal menyimpan produk");
     }
-    setIsProductModalOpen(false);
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -142,18 +228,29 @@ export default function AdminDashboard() {
   };
 
   // --- Handlers for Pesanan ---
-  const handleUpdateOrderStatus = (id: string, newStatus: string) => {
-    setOrders(prev => prev.map(o => o.id === id ? { ...o, status: newStatus } : o));
-    if(selectedOrder && selectedOrder.id === id) {
-      setSelectedOrder({ ...selectedOrder, status: newStatus });
+  const handleUpdateOrderStatus = async (id: string, newStatus: string) => {
+    try {
+      await updateOrderData(id, { status: newStatus });
+      setOrders(prev => prev.map(o => o.id === id ? { ...o, status: newStatus } : o));
+      if (selectedOrder && selectedOrder.id === id) {
+        setSelectedOrder({ ...selectedOrder, status: newStatus });
+      }
+      showPopup(`Status pesanan diubah menjadi ${newStatus}`);
+    } catch (error: any) {
+      showPopup(error.message || "Gagal mengubah status pesanan");
     }
   };
-  const handleUpdateResi = (e: React.FormEvent) => {
+  const handleUpdateResi = async (e: React.FormEvent) => {
     e.preventDefault();
     const resi = (e.target as any).resi.value;
-    setOrders(prev => prev.map(o => o.id === selectedOrder.id ? { ...o, resi, status: "Dikirim" } : o));
-    setSelectedOrder({ ...selectedOrder, resi, status: "Dikirim" });
-    showPopup("Resi berhasil diupdate dan status menjadi Dikirim.");
+    try {
+      await updateOrderData(selectedOrder.id, { resi, status: "Dikirim" });
+      setOrders(prev => prev.map(o => o.id === selectedOrder.id ? { ...o, resi, status: "Dikirim" } : o));
+      setSelectedOrder({ ...selectedOrder, resi, status: "Dikirim" });
+      showPopup("Resi berhasil diupdate dan status menjadi Dikirim.");
+    } catch (error: any) {
+      showPopup(error.message || "Gagal menyimpan resi");
+    }
   };
 
   return (
@@ -252,7 +349,7 @@ export default function AdminDashboard() {
                       <td>{p.id}</td>
                       <td>{p.name}</td>
                       <td>{p.type}</td>
-                      <td>Rp {p.price.toLocaleString("id-ID")}</td>
+                      <td>Rp {(p.price || 0).toLocaleString("id-ID")}</td>
                       <td>{p.stock}</td>
                       <td>
                         <button className="admin-btn-secondary" style={{ marginRight: '8px' }} onClick={() => openEditProduct(p)}>Edit</button>
@@ -290,7 +387,7 @@ export default function AdminDashboard() {
                       <td>{o.id}</td>
                       <td>{o.customer}</td>
                       <td>{o.type}</td>
-                      <td>Rp {o.total.toLocaleString("id-ID")}</td>
+                      <td>Rp {(o.total || 0).toLocaleString("id-ID")}</td>
                       <td>
                         <span className={`admin-badge ${o.status === 'Menunggu Pembayaran' ? 'badge-warning' : o.status === 'Ditolak' ? 'badge-danger' : 'badge-success'}`}>
                           {o.status}
@@ -382,7 +479,23 @@ export default function AdminDashboard() {
                 <div className="admin-form-group">
                   <label>Unggah Hasil Pekerjaan (Video)</label>
                   <div style={{ display: 'flex', gap: '10px' }}>
-                    <input type="file" className="admin-form-input" accept="video/*" style={{ padding: '8px' }} />
+                    <input 
+                      type="file" 
+                      className="admin-form-input" 
+                      accept="video/*" 
+                      style={{ padding: '8px' }} 
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setJasaResultLink(reader.result as string);
+                            showPopup("File video berhasil dimuat! Silakan klik Upload.");
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
                     <button className="admin-btn-primary" onClick={handleSaveJasaResult}>Upload</button>
                   </div>
                 </div>
@@ -395,7 +508,7 @@ export default function AdminDashboard() {
                         ref={videoRef}
                         className="video-player"
                         controls
-                        src="/videos/hero.webm"
+                        src={selectedJasa.resultLink || "/videos/hero.webm"}
                         style={{ width: "100%", borderRadius: "12px", border: "2px solid #cbd5e1", background: "#000" }}
                       />
                     </div>
@@ -515,7 +628,7 @@ export default function AdminDashboard() {
                 <p><strong>Pelanggan:</strong> {selectedOrder.customer}</p>
                 <p><strong>Tanggal:</strong> {selectedOrder.date}</p>
                 <p><strong>Jenis:</strong> {selectedOrder.type}</p>
-                <p><strong>Total Bayar:</strong> Rp {selectedOrder.total.toLocaleString("id-ID")}</p>
+                <p><strong>Total Bayar:</strong> Rp {(selectedOrder.total || 0).toLocaleString("id-ID")}</p>
                 <p><strong>Status Saat Ini:</strong> <span className="admin-badge badge-warning" style={{marginLeft:'8px'}}>{selectedOrder.status}</span></p>
                 
                 {selectedOrder.status === "Menunggu Pembayaran" && (

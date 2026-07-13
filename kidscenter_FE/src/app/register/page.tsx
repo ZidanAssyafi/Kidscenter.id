@@ -1,7 +1,7 @@
 "use client";
 import { useState, FormEvent, useEffect } from "react";
 import Link from "next/link";
-import { registerUser } from "@/lib/api";
+import { registerUser, loginUser } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import "../auth.css";
 import AuthLayout from "@/components/AuthLayout";
@@ -86,7 +86,18 @@ export default function RegisterPage() {
         password: form.password,
       });
 
-      setTimeout(() => router.push("/login"), 2000);
+      // Auto-login setelah registrasi
+      const loginData = await loginUser({
+        identifier: form.username, // Menggunakan username untuk login
+        password: form.password,
+      });
+
+      const storage = loginData.isDemo ? sessionStorage : localStorage;
+      storage.setItem("token", loginData.token);
+      storage.setItem("user", JSON.stringify(loginData.user));
+
+      // Redirect ke landing page
+      window.location.href = "/";
     } catch (err: any) {
       setServerError(err.message || "Terjadi kesalahan");
     } finally {

@@ -55,7 +55,7 @@ export default function LoginPage() {
       storage.setItem("user", JSON.stringify(data.user));
 
       // Redirect to admin dashboard if user is admin
-      if (data.user.role === "admin") {
+      if (data.user.role?.toLowerCase() === "admin") {
         window.location.href = "/admin/dashboard";
       } else {
         window.location.href = "/";

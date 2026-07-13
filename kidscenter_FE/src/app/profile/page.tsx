@@ -40,10 +40,10 @@ export default function ProfilePage() {
     const parsedUser = JSON.parse(storedUser);
     setUser(parsedUser);
     setProfileForm({
-      name: parsedUser.name || "",
+      name: parsedUser.nama || parsedUser.name || "",
       username: parsedUser.username || "",
       email: parsedUser.email || "",
-      phone: parsedUser.phone || "",
+      phone: parsedUser.nomorWa || parsedUser.phone || "",
     });
   }, [router]);
 

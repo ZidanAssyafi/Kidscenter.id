@@ -7,6 +7,7 @@ import { useSharedState } from "@/lib/useSharedState";
 import { INITIAL_PROJECTS, INITIAL_ORDERS } from "@/lib/initialData";
 import { compressImage } from "@/lib/imageUtils";
 import { showPopup } from "@/lib/popupUtils";
+import { getUserOrders, updateOrderData, createProject, getUserProjects, updateProjectData } from "@/lib/api";
 
 // Utility to format seconds to MM:SS
 const formatTime = (timeInSeconds: number) => {
@@ -18,10 +19,15 @@ const formatTime = (timeInSeconds: number) => {
 export default function PortalPage() {
   const router = useRouter();
 
+  const [user, setUser] = useState<any>(null);
+
   useEffect(() => {
     const token = sessionStorage.getItem("token") || localStorage.getItem("token");
-    if (!token) {
+    const userStr = sessionStorage.getItem("user") || localStorage.getItem("user");
+    if (!token || !userStr) {
       router.push("/");
+    } else {
+      setUser(JSON.parse(userStr));
     }
   }, [router]);
 
@@ -33,7 +39,23 @@ export default function PortalPage() {
 
   // States for Active Projects (Kanban Board)
   const columns = ["Briefing dan Pembayaran", "In Progress", "In Review", "Done"];
-  const [projects, setProjects] = useSharedState("kc_projects", INITIAL_PROJECTS);
+  const [projects, setProjects] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (user) {
+      fetchUserProjects();
+    }
+  }, [user]);
+
+  const fetchUserProjects = async () => {
+    try {
+      const idUser = user.id || user.id_user;
+      const data = await getUserProjects(idUser);
+      setProjects(data);
+    } catch (error: any) {
+      console.error(error.message);
+    }
+  };
 
   const [selectedProject, setSelectedProject] = useState<any>(null);
 
@@ -48,7 +70,23 @@ export default function PortalPage() {
   // States for Catalog Orders
   const invoiceRef = useRef<HTMLDivElement>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
-  const [catalogOrders, setCatalogOrders] = useSharedState("kc_orders", INITIAL_ORDERS);
+  const [catalogOrders, setCatalogOrders] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (user) {
+      fetchUserOrders();
+    }
+  }, [user]);
+
+  const fetchUserOrders = async () => {
+    try {
+      const idUser = user.id || user.id_user;
+      const data = await getUserOrders(idUser);
+      setCatalogOrders(data);
+    } catch (error: any) {
+      console.error(error.message);
+    }
+  };
 
   useEffect(() => {
     if (selectedProject || selectedInvoice) {
@@ -65,19 +103,24 @@ export default function PortalPage() {
     }
   };
 
-  const handleAddComment = () => {
+  const handleAddComment = async () => {
     if (!newCommentText.trim() || !selectedProject) return;
     if (videoRef.current) {
       const time = videoRef.current.currentTime;
-      const newComment = { id: Date.now(), time, text: newCommentText, sender: 'User Test (Klien)' };
-      const updatedProject = {
-        ...selectedProject,
-        reviewComments: [...(selectedProject.reviewComments || []), newComment].sort((a: any, b: any) => a.time - b.time)
-      };
-      setProjects(projects.map(p => p.id === selectedProject.id ? updatedProject : p));
-      setSelectedProject(updatedProject);
-      setNewCommentText("");
-      videoRef.current.pause();
+      const newComment = { id: Date.now(), time, text: newCommentText, sender: user.name || 'User (Klien)' };
+      
+      const newReviewComments = [...(selectedProject.reviewComments || []), newComment].sort((a: any, b: any) => a.time - b.time);
+      
+      try {
+        await updateProjectData(selectedProject.id, { review_comments: newReviewComments });
+        const updatedProject = { ...selectedProject, reviewComments: newReviewComments };
+        setProjects(projects.map(p => p.id === selectedProject.id ? updatedProject : p));
+        setSelectedProject(updatedProject);
+        setNewCommentText("");
+        videoRef.current.pause();
+      } catch(error: any) {
+        showPopup(error.message || "Gagal mengirim komentar.");
+      }
     }
   };
 
@@ -106,24 +149,39 @@ export default function PortalPage() {
     }
   };
 
-  const handleSendChat = () => {
+  const handleSendChat = async () => {
     if (!newChatMessage.trim() || !selectedProject) return;
-    const newMessage = { id: Date.now(), sender: 'User Test (Klien)', text: newChatMessage, role: 'user' };
-    const updatedProject = {
-      ...selectedProject,
-      chatMessages: [...(selectedProject.chatMessages || []), newMessage]
-    };
-    setProjects(projects.map(p => p.id === selectedProject.id ? updatedProject : p));
-    setSelectedProject(updatedProject);
-    setNewChatMessage("");
+    const newMessage = { id: Date.now(), sender: user.name || 'User (Klien)', text: newChatMessage, role: 'user' };
+    const newChatMessages = [...(selectedProject.chatMessages || []), newMessage];
+    
+    try {
+      await updateProjectData(selectedProject.id, { chat_messages: newChatMessages });
+      const updatedProject = { ...selectedProject, chatMessages: newChatMessages };
+      setProjects(projects.map(p => p.id === selectedProject.id ? updatedProject : p));
+      setSelectedProject(updatedProject);
+      setNewChatMessage("");
+    } catch(error: any) {
+      showPopup("Gagal mengirim chat");
+    }
   };
 
-  const handleSubmitRequest = (e: React.FormEvent) => {
+  const handleSubmitRequest = async (e: React.FormEvent) => {
     e.preventDefault();
-    showPopup("Permintaan animasi berhasil dikirim!");
-    setTitle("");
-    setDescription("");
-    setActiveTab("active_projects");
+    try {
+      const payload = {
+        id_user: user.id || user.id_user,
+        nama_project: title,
+        deskripsi: JSON.stringify({ description, genre: "Animasi" })
+      };
+      await createProject(payload);
+      showPopup("Permintaan animasi berhasil dikirim!");
+      setTitle("");
+      setDescription("");
+      fetchUserProjects();
+      setActiveTab("active_projects");
+    } catch (error: any) {
+      showPopup(error.message || "Gagal membuat proyek");
+    }
   };
 
   const openProjectModal = (project: any) => {
@@ -138,32 +196,48 @@ export default function PortalPage() {
     setSelectedProject(null);
   };
 
-  const handleApproveProject = () => {
+  const handleApproveProject = async () => {
     if (selectedProject) {
-      setProjects(projects.map(p =>
-        p.id === selectedProject.id ? { ...p, status: "Done" } : p
-      ));
-      showPopup("Proyek telah disetujui! Memindahkan ke kolom Done...");
-      closeModal();
+      try {
+        await updateProjectData(selectedProject.id, { status: "Done" });
+        setProjects(projects.map(p =>
+          p.id === selectedProject.id ? { ...p, status: "Done" } : p
+        ));
+        showPopup("Proyek telah disetujui! Memindahkan ke kolom Done...");
+        closeModal();
+      } catch (error: any) {
+        showPopup(error.message || "Gagal menyetujui proyek");
+      }
     }
   };
 
   const handlePaymentUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && selectedProject) {
-      compressImage(file, (dataUrl) => {
-        const updatedProject = { ...selectedProject, paymentProof: dataUrl, status: "Briefing dan Pembayaran" };
-        setProjects(projects.map(p => p.id === selectedProject.id ? updatedProject : p));
-        setSelectedProject(updatedProject);
+      compressImage(file, async (dataUrl) => {
+        try {
+          await updateProjectData(selectedProject.id, { payment_proof: dataUrl, status: "Briefing dan Pembayaran" });
+          const updatedProject = { ...selectedProject, paymentProof: dataUrl, status: "Briefing dan Pembayaran" };
+          setProjects(projects.map(p => p.id === selectedProject.id ? updatedProject : p));
+          setSelectedProject(updatedProject);
+          showPopup("Bukti pembayaran berhasil diunggah!");
+        } catch(error: any) {
+          showPopup("Gagal mengunggah bukti pembayaran");
+        }
       });
     }
   };
 
-  const handleOrderReceived = (orderId: string) => {
-    setCatalogOrders(catalogOrders.map((o: any) => 
-      o.id === orderId ? { ...o, status: "Selesai" } : o
-    ));
-    showPopup(`Pesanan ${orderId} telah diterima dan statusnya kini menjadi Selesai.`);
+  const handleOrderReceived = async (orderId: string) => {
+    try {
+      await updateOrderData(orderId, { status: "Selesai" });
+      setCatalogOrders(catalogOrders.map((o: any) => 
+        o.id === orderId ? { ...o, status: "Selesai" } : o
+      ));
+      showPopup(`Pesanan telah diterima dan statusnya kini menjadi Selesai.`);
+    } catch (error: any) {
+      showPopup(error.message || "Gagal mengubah status pesanan");
+    }
   };
 
   return (
@@ -289,7 +363,7 @@ export default function PortalPage() {
                       </div>
                       <div className="order-meta-item">
                         <span className="meta-label">Total</span>
-                        <span className="meta-value">Rp {order.total.toLocaleString("id-ID")}</span>
+                        <span className="meta-value">Rp {(order.total || 0).toLocaleString("id-ID")}</span>
                       </div>
                       {order.resi && (
                         <div className="order-meta-item hide-on-mobile">
@@ -392,7 +466,7 @@ export default function PortalPage() {
                     ref={videoRef}
                     className="video-player"
                     controls
-                    src="/videos/hero.webm"
+                    src={selectedProject.resultLink || "/videos/hero.webm"}
                     onTimeUpdate={handleTimeUpdate}
                   />
                   <div className="approval-bar">
@@ -475,7 +549,7 @@ export default function PortalPage() {
                 {selectedInvoice.items.map((item: any, idx: number) => (
                   <div key={idx} style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
                     <span>{item.quantity}x {item.name}</span>
-                    <span style={{ fontWeight: 600 }}>Rp {(item.price * item.quantity).toLocaleString("id-ID")}</span>
+                    <span style={{ fontWeight: 600 }}>Rp {((item.price || 0) * item.quantity).toLocaleString("id-ID")}</span>
                   </div>
                 ))}
               </div>
@@ -494,7 +568,7 @@ export default function PortalPage() {
               <div style={{ padding: "1rem", background: "var(--kc-bg-alt)", borderRadius: "8px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
                   <span>Subtotal:</span>
-                  <span>Rp {selectedInvoice.type === "Fisik" ? (selectedInvoice.total - 15000).toLocaleString("id-ID") : selectedInvoice.total.toLocaleString("id-ID")}</span>
+                  <span>Rp {selectedInvoice.type === "Fisik" ? ((selectedInvoice.total || 0) - 15000).toLocaleString("id-ID") : (selectedInvoice.total || 0).toLocaleString("id-ID")}</span>
                 </div>
                 {selectedInvoice.type === "Fisik" && (
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
@@ -504,7 +578,7 @@ export default function PortalPage() {
                 )}
                 <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 800, fontSize: "1.2rem", marginTop: "1rem", borderTop: "1px solid var(--kc-border)", paddingTop: "1rem" }}>
                   <span>Total Bayar:</span>
-                  <span style={{ color: "var(--kc-cyan)" }}>Rp {selectedInvoice.total.toLocaleString("id-ID")}</span>
+                  <span style={{ color: "var(--kc-cyan)" }}>Rp {(selectedInvoice.total || 0).toLocaleString("id-ID")}</span>
                 </div>
               </div>
 

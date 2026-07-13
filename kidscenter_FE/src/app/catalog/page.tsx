@@ -6,9 +6,10 @@ import Link from "next/link";
 import "./catalog.css";
 
 import { useSharedState } from "@/lib/useSharedState";
-import { INITIAL_PRODUCTS, INITIAL_ORDERS } from "@/lib/initialData";
+import { INITIAL_ORDERS } from "@/lib/initialData";
 import { compressImage } from "@/lib/imageUtils";
 import { showPopup } from "@/lib/popupUtils";
+import { getProducts, checkoutOrder } from "@/lib/api";
 
 const getImgSrc = (img: string) => {
   if (!img) return "";
@@ -22,7 +23,21 @@ interface CartItem {
 }
 
 export default function CatalogPage() {
-  const [products] = useSharedState("kc_products", INITIAL_PRODUCTS);
+  const [products, setProducts] = useState<any[]>([]);
+  
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const data = await getProducts();
+      setProducts(data);
+    } catch (error: any) {
+      console.error("Gagal mengambil produk:", error);
+    }
+  };
+
   const digitalProducts = products.filter(p => p.category === "Digital" && p.type === "Digital Asset");
   const physicalProducts = products.filter(p => p.category === "Fisik");
   const downloads = products.filter(p => p.category === "Digital" && (p.type === "Coloring Sheets" || p.type === "Papercraft"));
@@ -96,36 +111,28 @@ export default function CatalogPage() {
     setCheckoutPopupOpen(true);
   };
 
-  const submitCheckout = () => {
-    const newOrder = {
-      id: `ORD-${Date.now()}`,
-      customer: "User Test", // Mock user
-      type: hasPhysical ? "Fisik" : "Digital",
-      date: new Date().toLocaleDateString("id-ID", { day: '2-digit', month: 'short', year: 'numeric' }),
-      status: "Menunggu Pembayaran",
-      total: totalPrice + ongkir,
-      resi: "",
-      paymentProof: paymentProof || "",
-      items: cart.map(item => ({
-        name: item.product.name || item.product.title,
-        quantity: item.quantity,
-        price: item.product.price,
-        image: item.product.image || item.product.thumbnail
-      }))
-    };
-    setCatalogOrders([...catalogOrders, newOrder]);
+  const submitCheckout = async () => {
+    try {
+      await checkoutOrder({
+        cart,
+        address: address,
+        paymentProof: paymentProof
+      });
 
-    showPopup("Pesanan berhasil dibuat! Kami akan segera memprosesnya.");
-    setCheckoutPopupOpen(false);
-    setCart([]);
-    setIsCartOpen(false);
-    setAddress("");
-    setPaymentProof(null);
+      showPopup("Pesanan berhasil dibuat! Kami akan segera memprosesnya.");
+      setCheckoutPopupOpen(false);
+      setCart([]);
+      setIsCartOpen(false);
+      setAddress("");
+      setPaymentProof(null);
+    } catch (error: any) {
+      showPopup(error.message || "Gagal melakukan checkout, coba lagi.");
+    }
   };
 
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = cart.reduce(
-    (sum, item) => sum + item.product.price * item.quantity,
+    (sum, item) => sum + (item.product.price || 0) * item.quantity,
     0
   );
 
@@ -167,7 +174,7 @@ export default function CatalogPage() {
                   <h3 className="product-name">{p.name}</h3>
                   <div className="product-meta">
                     <span className="product-stock">{p.stock}</span>
-                    <span className="product-price">Rp {p.price.toLocaleString("id-ID")}</span>
+                    <span className="product-price">Rp {(p.price || 0).toLocaleString("id-ID")}</span>
                   </div>
                   <button className="btn-order" onClick={(e) => { e.stopPropagation(); addToCart(p); }}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -196,7 +203,7 @@ export default function CatalogPage() {
                   <h3 className="product-name">{p.name}</h3>
                   <div className="product-meta">
                     <span className="product-stock">{p.stock}</span>
-                    <span className="product-price">Rp {p.price.toLocaleString("id-ID")}</span>
+                    <span className="product-price">Rp {(p.price || 0).toLocaleString("id-ID")}</span>
                   </div>
                   <button className="btn-order" onClick={(e) => { e.stopPropagation(); addToCart(p); }}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -285,7 +292,7 @@ export default function CatalogPage() {
                 <div className="modal-meta">
                   <div className="modal-meta-row">
                     <span className="modal-meta-label">Harga</span>
-                    <span className="modal-meta-val price">Rp {selectedProduct.price.toLocaleString("id-ID")}</span>
+                    <span className="modal-meta-val price">Rp {(selectedProduct.price || 0).toLocaleString("id-ID")}</span>
                   </div>
                   <div className="modal-meta-row">
                     <span className="modal-meta-label">Status</span>
@@ -368,7 +375,7 @@ export default function CatalogPage() {
                 <img src={getImgSrc(item.product.image || "")} alt={item.product.name} className="cart-item-img" />
                 <div className="cart-item-info">
                   <h4 className="cart-item-name">{item.product.name}</h4>
-                  <p className="cart-item-price">Rp {item.product.price.toLocaleString("id-ID")}</p>
+                  <p className="cart-item-price">Rp {(item.product.price || 0).toLocaleString("id-ID")}</p>
                   <div className="cart-item-controls">
                     <button className="qty-btn" onClick={() => updateQuantity(item.product.id, -1)}>−</button>
                     <span className="qty-val">{item.quantity}</span>
@@ -417,7 +424,7 @@ export default function CatalogPage() {
                   {cart.map((item, idx) => (
                     <li key={idx} style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem", borderBottom: "1px dashed var(--kc-border)", paddingBottom: "0.5rem" }}>
                       <span>{item.quantity}x {item.product.name}</span>
-                      <span style={{ fontWeight: 600 }}>Rp {(item.product.price * item.quantity).toLocaleString("id-ID")}</span>
+                      <span style={{ fontWeight: 600 }}>Rp {((item.product.price || 0) * item.quantity).toLocaleString("id-ID")}</span>
                     </li>
                   ))}
                 </ul>

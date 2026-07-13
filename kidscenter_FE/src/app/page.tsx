@@ -460,7 +460,7 @@ export default function LandingPage() {
                 );
               })}
             </div>
-            
+
             <div className="problem-mascot-wrapper">
               <img src="/images/mari_caca.webp" alt="Mari Caca Mascot" className="problem-mascot" />
             </div>

@@ -246,7 +246,7 @@ export async function createProduct(productData) {
     nama_product: productData.name,
     harga: productData.price,
     stok: productData.stock,
-    tipe: (productData.category === "Fisik" || productData.category === "merchandise") ? "merchandise" : "jasa",
+    tipe: (productData.category === "Fisik") ? "merchandise" : "jasa",
     deskripsi: JSON.stringify({
       desc: productData.description,
       image: productData.image,
@@ -277,7 +277,7 @@ export async function updateProductData(id, productData) {
     nama_product: productData.name,
     harga: productData.price,
     stok: productData.stock,
-    tipe: (productData.category === "Fisik" || productData.category === "merchandise") ? "merchandise" : "jasa",
+    tipe: productData.category.toLowerCase(),
     deskripsi: JSON.stringify({
       desc: productData.description,
       image: productData.image,

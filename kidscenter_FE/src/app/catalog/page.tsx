@@ -38,9 +38,9 @@ export default function CatalogPage() {
     }
   };
 
-  const digitalProducts = products.filter(p => p.category === "Digital" && p.type === "Digital Asset");
+  const digitalProducts = products.filter(p => p.category === "Digital" && p.type !== "Coloring Sheets" && p.type !== "Papercraft");
   const physicalProducts = products.filter(p => p.category === "Fisik");
-  const downloads = products.filter(p => p.category === "Digital" && (p.type === "Coloring Sheets" || p.type === "Papercraft"));
+  const downloads = products.filter(p => p.category === "Download Hub" || (p.category === "Digital" && (p.type === "Coloring Sheets" || p.type === "Papercraft")));
 
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);

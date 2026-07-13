@@ -570,6 +570,7 @@ export default function AdminDashboard() {
                   <select className="admin-form-select" value={productForm.type} onChange={e => setProductForm({...productForm, type: e.target.value})}>
                     <option value="Fisik">Fisik</option>
                     <option value="Digital">Digital</option>
+                    <option value="Download Hub">Download Hub</option>
                   </select>
                 </div>
                 <div className="admin-form-group">

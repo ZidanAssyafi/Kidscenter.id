@@ -212,7 +212,7 @@ export async function getProducts() {
   if (!res.ok) {
     throw new Error(data.message || "Gagal mengambil data produk");
   }
-  
+
   return (data.data || []).map(p => {
     let extra = {};
     try {
@@ -224,7 +224,7 @@ export async function getProducts() {
     } catch (e) {
       extra = { desc: p.deskripsi };
     }
-    
+
     return {
       id: p.id_product,
       name: p.nama_product,
@@ -241,7 +241,7 @@ export async function getProducts() {
 
 export async function createProduct(productData) {
   const token = typeof window !== "undefined" ? (sessionStorage.getItem("token") || localStorage.getItem("token")) : null;
-  
+
   const payload = {
     nama_product: productData.name,
     harga: productData.price,
@@ -272,7 +272,7 @@ export async function createProduct(productData) {
 
 export async function updateProductData(id, productData) {
   const token = typeof window !== "undefined" ? (sessionStorage.getItem("token") || localStorage.getItem("token")) : null;
-  
+
   const payload = {
     nama_product: productData.name,
     harga: productData.price,
@@ -306,7 +306,7 @@ export async function updateProductData(id, productData) {
 export async function checkoutOrder(orderData) {
   const token = typeof window !== "undefined" ? (sessionStorage.getItem("token") || localStorage.getItem("token")) : null;
   const user = JSON.parse(sessionStorage.getItem("user") || localStorage.getItem("user") || "{}");
-  
+
   const checkoutPayload = {
     id_user: user.id || user.id_user,
     items: orderData.cart.map(item => ({
@@ -324,7 +324,7 @@ export async function checkoutOrder(orderData) {
     },
     body: JSON.stringify(checkoutPayload)
   });
-  
+
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || "Gagal checkout");
 
@@ -359,7 +359,7 @@ export async function getAllOrders() {
   const res = await fetch(`${BASE_URL}/api/orders`, {
     headers: { Authorization: `Bearer ${token}` }
   });
-  
+
   let data;
   try {
     data = await res.json();
@@ -369,7 +369,7 @@ export async function getAllOrders() {
   }
 
   if (!res.ok) throw new Error(data?.message || "Gagal mengambil pesanan");
-  
+
   return (data.data || []).map(o => mapOrderData(o));
 }
 
@@ -378,7 +378,7 @@ export async function getUserOrders(id_user) {
   const res = await fetch(`${BASE_URL}/api/orders/user/${id_user}`, {
     headers: { Authorization: `Bearer ${token}` }
   });
-  
+
   let data;
   try {
     data = await res.json();
@@ -388,7 +388,7 @@ export async function getUserOrders(id_user) {
   }
 
   if (!res.ok) throw new Error(data?.message || "Gagal mengambil pesanan");
-  
+
   return (data.data || []).map(o => mapOrderData(o));
 }
 
@@ -399,7 +399,7 @@ function mapOrderData(o) {
   else if (status === "dikirim") status = "Dikirim";
   else if (status === "selesai") status = "Selesai";
   else if (status === "ditolak") status = "Ditolak";
-  
+
   let type = "Digital";
   if (o.order_detail && o.order_detail.some(d => d.products?.tipe === "merchandise")) {
     type = "Fisik";
@@ -425,8 +425,8 @@ function mapOrderData(o) {
           const parsed = JSON.parse(d.products.deskripsi);
           image = parsed.image || "";
         }
-      } catch(e) {}
-      
+      } catch (e) { }
+
       return {
         name: d.products?.nama_product || "Produk",
         quantity: d.jumlah,
@@ -439,7 +439,7 @@ function mapOrderData(o) {
 
 export async function updateOrderData(id, updateData) {
   const token = typeof window !== "undefined" ? (sessionStorage.getItem("token") || localStorage.getItem("token")) : null;
-  
+
   // Map back to backend status
   let backendStatus = updateData.status;
   if (backendStatus === "Menunggu Pembayaran") backendStatus = "pending";
@@ -461,7 +461,7 @@ export async function updateOrderData(id, updateData) {
     },
     body: JSON.stringify(payload)
   });
-  
+
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || "Gagal update pesanan");
   return data.data;
@@ -506,7 +506,7 @@ export async function createProject(payload) {
     body: JSON.stringify(payload)
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.message || "Gagal membuat proyek");
+  if (!res.ok) throw new Error(data.error ? `Gagal: ${data.error}` : (data.message || "Gagal membuat proyek"));
   return data.data;
 }
 
@@ -515,7 +515,7 @@ export async function getAllProjects() {
   const res = await fetch(`${BASE_URL}/api/projects`, {
     headers: { Authorization: `Bearer ${token}` }
   });
-  
+
   let data;
   try {
     data = await res.json();
@@ -533,7 +533,7 @@ export async function getUserProjects(id_user) {
   const res = await fetch(`${BASE_URL}/api/projects/user/${id_user}`, {
     headers: { Authorization: `Bearer ${token}` }
   });
-  
+
   let data;
   try {
     data = await res.json();
@@ -548,13 +548,18 @@ export async function getUserProjects(id_user) {
 
 export async function updateProjectData(id, payload) {
   const token = typeof window !== "undefined" ? (sessionStorage.getItem("token") || localStorage.getItem("token")) : null;
+
+  let backendStatus = payload.status;
+  // Membiarkan status apa adanya sesuai dengan constraint di database Supabase
+  // (misalnya: "Briefing dan Pembayaran", "In Progress", "In Review", "Done", "Pembayaran ditolak")
+
   const res = await fetch(`${BASE_URL}/api/projects/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`
     },
-    body: JSON.stringify(payload)
+    body: JSON.stringify({ ...payload, status: backendStatus })
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || "Gagal update proyek");
@@ -567,20 +572,34 @@ function mapProjectData(p) {
     if (p.deskripsi && p.deskripsi.startsWith("{")) {
       extraDesc = JSON.parse(p.deskripsi);
     }
-  } catch(e) {}
-  
+  } catch (e) { }
+
   // Safe parse JSON columns
   let chatMessages = [];
   try {
     if (typeof p.chat_messages === 'string') chatMessages = JSON.parse(p.chat_messages);
     else if (Array.isArray(p.chat_messages)) chatMessages = p.chat_messages;
-  } catch(e) {}
+  } catch (e) { }
 
   let reviewComments = [];
   try {
     if (typeof p.review_comments === 'string') reviewComments = JSON.parse(p.review_comments);
     else if (Array.isArray(p.review_comments)) reviewComments = p.review_comments;
-  } catch(e) {}
+  } catch (e) { }
+
+  let status = p.status;
+  // Jika karena suatu alasan ada typo saat pengetesan sebelumnya, kita tangani
+  if (status === "Breafing dan Pembayaran" || status === "briefing") {
+    status = "Briefing dan Pembayaran";
+  } else if (status === "review") {
+    status = "In Review";
+  } else if (status === "selesai") {
+    status = "Done";
+  } else if (status === "in_progress") {
+    status = "In Progress";
+  } else if (status === "pembayaran_ditolak") {
+    status = "Pembayaran ditolak";
+  }
 
   return {
     id: p.id_project,
@@ -588,7 +607,7 @@ function mapProjectData(p) {
     title: p.nama_project,
     genre: extraDesc.genre || "Animasi",
     date: new Date(p.created_at || Date.now()).toLocaleDateString("id-ID", { day: '2-digit', month: 'short', year: 'numeric' }),
-    status: p.status,
+    status: status,
     description: extraDesc.description || p.deskripsi || "",
     resultLink: p.result_link || "",
     paymentProof: p.payment_proof || "",

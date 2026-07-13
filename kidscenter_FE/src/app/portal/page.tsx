@@ -348,7 +348,7 @@ export default function PortalPage() {
               <div key={order.id} className="order-card">
                 <div className="order-header">
                   <span className="order-id">{order.id}</span>
-                  <span className={`order-status status-${order.status.toLowerCase()}`}>{order.status}</span>
+                  <span className={`order-status status-${order.status.toLowerCase().replace(/\s+/g, '-')}`}>{order.status}</span>
                 </div>
                 <div className="order-body" style={{ display: "flex", gap: "1rem", alignItems: "flex-start" }}>
                   <img src={order.items[0].image} alt={order.items[0].name} style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "12px", border: "1px solid var(--kc-border)" }} />
@@ -368,9 +368,9 @@ export default function PortalPage() {
                         <span className="meta-value">Rp {(order.total || 0).toLocaleString("id-ID")}</span>
                       </div>
                       {order.resi && (
-                        <div className="order-meta-item hide-on-mobile">
+                        <div className="order-meta-item">
                           <span className="meta-label">Resi</span>
-                          <span className="meta-value">{order.resi}</span>
+                          <span className="meta-value" style={{ fontWeight: 800, color: "var(--kc-cyan)" }}>{order.resi}</span>
                         </div>
                       )}
                     </div>
@@ -379,7 +379,7 @@ export default function PortalPage() {
                 <div className="order-footer" style={{ gap: "0.75rem", flexWrap: "wrap" }}>
                   <button className="btn-order-action secondary" onClick={() => setSelectedInvoice(order)}>Detail</button>
                   {order.type === "Fisik" ? (
-                    order.status !== "Selesai" && (
+                    order.status === "Dikirim" && (
                       <button className="btn-order-action" onClick={() => handleOrderReceived(order.id)}>Pesanan Diterima</button>
                     )
                   ) : (
@@ -539,7 +539,7 @@ export default function PortalPage() {
                 <p style={{ margin: "0 0 0.5rem 0", fontWeight: 700 }}>Order ID: <span style={{ color: "var(--kc-cyan)" }}>{selectedInvoice.id}</span></p>
                 <p style={{ margin: "0 0 0.5rem 0" }}>Tanggal: {selectedInvoice.date}</p>
                 <p style={{ margin: "0 0 0.5rem 0", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  Status: <span className={`order-status status-${selectedInvoice.status.toLowerCase()}`}>{selectedInvoice.status}</span>
+                  Status: <span className={`order-status status-${selectedInvoice.status.toLowerCase().replace(/\s+/g, '-')}`}>{selectedInvoice.status}</span>
                 </p>
                 {selectedInvoice.resi && (
                   <p style={{ margin: "0.5rem 0 0 0" }}>Resi: <span style={{ fontWeight: 700 }}>{selectedInvoice.resi}</span></p>
@@ -559,10 +559,8 @@ export default function PortalPage() {
               {selectedInvoice.type === "Fisik" && (
                 <div style={{ marginBottom: "1.5rem", padding: "1rem", background: "var(--kc-bg-alt)", borderRadius: "8px" }}>
                   <h3 style={{ fontSize: "1rem", marginBottom: "0.5rem" }}>Alamat Pengiriman:</h3>
-                  <p style={{ margin: 0, fontSize: "0.95rem", lineHeight: 1.5 }}>
-                    Jl. Contoh Alamat Pengiriman No. 123<br />
-                    Kecamatan, Kota, Provinsi<br />
-                    Kode Pos: 12345
+                  <p style={{ margin: 0, fontSize: "0.95rem", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
+                    {selectedInvoice.address || "Alamat tidak tersedia."}
                   </p>
                 </div>
               )}

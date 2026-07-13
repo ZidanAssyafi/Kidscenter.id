@@ -394,11 +394,14 @@ export async function getUserOrders(id_user) {
 
 function mapOrderData(o) {
   let status = o.status;
-  if (status === "pending") status = "Menunggu Pembayaran";
-  else if (status === "dibayar") status = "Diproses";
-  else if (status === "dikirim") status = "Dikirim";
-  else if (status === "selesai") status = "Selesai";
-  else if (status === "ditolak") status = "Ditolak";
+  if (status) {
+    const s = status.toLowerCase();
+    if (s === "pending" || s === "verifikasi_pembayaran" || s === "verifikasi pembayaran") status = "Verifikasi Pembayaran";
+    else if (s === "ditolak") status = "Ditolak";
+    else if (s === "diproses" || s === "dibayar") status = "Diproses";
+    else if (s === "dikirim") status = "Dikirim";
+    else if (s === "selesai") status = "Selesai";
+  }
 
   let type = "Digital";
   if (o.order_detail && o.order_detail.some(d => d.products?.tipe === "merchandise")) {
@@ -417,7 +420,7 @@ function mapOrderData(o) {
     status: status,
     paymentProof: payment?.bukti_pembayaran || "",
     address: o.alamat_pengiriman || "",
-    resi: o.no_resi || "",
+    resi: o.resi || o.no_resi || "",
     items: (o.order_detail || []).map(d => {
       let image = "";
       try {
@@ -442,16 +445,18 @@ export async function updateOrderData(id, updateData) {
 
   // Map back to backend status
   let backendStatus = updateData.status;
-  if (backendStatus === "Menunggu Pembayaran") backendStatus = "pending";
-  else if (backendStatus === "Diproses") backendStatus = "dibayar";
+  if (backendStatus === "Verifikasi Pembayaran") backendStatus = "verifikasi pembayaran";
+  else if (backendStatus === "Ditolak") backendStatus = "ditolak";
+  else if (backendStatus === "Diproses") backendStatus = "diproses";
   else if (backendStatus === "Dikirim") backendStatus = "dikirim";
   else if (backendStatus === "Selesai") backendStatus = "selesai";
-  else if (backendStatus === "Ditolak") backendStatus = "ditolak";
 
   const payload = {
     status: backendStatus,
-    no_resi: updateData.resi
   };
+  if (updateData.resi !== undefined) {
+    payload.resi = updateData.resi;
+  }
 
   const res = await fetch(`${BASE_URL}/api/orders/${id}`, {
     method: "PUT",

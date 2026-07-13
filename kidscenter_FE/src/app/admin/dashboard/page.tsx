@@ -244,10 +244,10 @@ export default function AdminDashboard() {
     e.preventDefault();
     const resi = (e.target as any).resi.value;
     try {
-      await updateOrderData(selectedOrder.id, { resi, status: "Dikirim" });
-      setOrders(prev => prev.map(o => o.id === selectedOrder.id ? { ...o, resi, status: "Dikirim" } : o));
-      setSelectedOrder({ ...selectedOrder, resi, status: "Dikirim" });
-      showPopup("Resi berhasil diupdate dan status menjadi Dikirim.");
+      await updateOrderData(selectedOrder.id, { resi, status: selectedOrder.status });
+      setOrders(prev => prev.map(o => o.id === selectedOrder.id ? { ...o, resi } : o));
+      setSelectedOrder({ ...selectedOrder, resi });
+      showPopup("Resi berhasil diupdate.");
     } catch (error: any) {
       showPopup(error.message || "Gagal menyimpan resi");
     }
@@ -389,7 +389,7 @@ export default function AdminDashboard() {
                       <td>{o.type}</td>
                       <td>Rp {(o.total || 0).toLocaleString("id-ID")}</td>
                       <td>
-                        <span className={`admin-badge ${o.status === 'Menunggu Pembayaran' ? 'badge-warning' : o.status === 'Ditolak' ? 'badge-danger' : 'badge-success'}`}>
+                        <span className={`admin-badge ${o.status === 'Verifikasi Pembayaran' ? 'badge-warning' : o.status === 'Ditolak' ? 'badge-danger' : o.status === 'Diproses' ? 'badge-secondary' : o.status === 'Dikirim' ? 'badge-info' : 'badge-success'}`}>
                           {o.status}
                         </span>
                       </td>
@@ -629,21 +629,20 @@ export default function AdminDashboard() {
                 <p><strong>Tanggal:</strong> {selectedOrder.date}</p>
                 <p><strong>Jenis:</strong> {selectedOrder.type}</p>
                 <p><strong>Total Bayar:</strong> Rp {(selectedOrder.total || 0).toLocaleString("id-ID")}</p>
-                <p><strong>Status Saat Ini:</strong> <span className="admin-badge badge-warning" style={{marginLeft:'8px'}}>{selectedOrder.status}</span></p>
+                <p><strong>Status Saat Ini:</strong> <span className={`admin-badge ${selectedOrder.status === 'Verifikasi Pembayaran' ? 'badge-warning' : selectedOrder.status === 'Ditolak' ? 'badge-danger' : selectedOrder.status === 'Diproses' ? 'badge-secondary' : selectedOrder.status === 'Dikirim' ? 'badge-info' : 'badge-success'}`} style={{marginLeft:'8px'}}>{selectedOrder.status}</span></p>
                 
-                {selectedOrder.status === "Menunggu Pembayaran" && (
+                {selectedOrder.status === "Verifikasi Pembayaran" && (
                   <div style={{ marginTop: '1.5rem', display: 'flex', gap: '10px' }}>
-                    <button className="admin-btn-primary" onClick={() => handleUpdateOrderStatus(selectedOrder.id, "Dikonfirmasi")}>Konfirmasi Pembayaran</button>
+                    <button className="admin-btn-primary" onClick={() => handleUpdateOrderStatus(selectedOrder.id, "Diproses")}>Konfirmasi Pembayaran</button>
                     <button className="admin-btn-secondary" style={{color:'red', borderColor:'red'}} onClick={() => handleUpdateOrderStatus(selectedOrder.id, "Ditolak")}>Tolak</button>
                   </div>
                 )}
 
-                {(selectedOrder.status === "Dikonfirmasi" || selectedOrder.status === "Diproses" || selectedOrder.status === "Dikirim") && (
+                {(selectedOrder.status === "Diproses" || selectedOrder.status === "Dikirim" || selectedOrder.status === "Selesai") && (
                   <div style={{ marginTop: '1.5rem' }}>
                     <div className="admin-form-group">
                       <label>Update Status Pesanan</label>
                       <select className="admin-form-select" value={selectedOrder.status} onChange={(e) => handleUpdateOrderStatus(selectedOrder.id, e.target.value)}>
-                        <option value="Dikonfirmasi">Dikonfirmasi</option>
                         <option value="Diproses">Diproses</option>
                         <option value="Dikirim">Dikirim</option>
                         <option value="Selesai">Selesai</option>
@@ -652,7 +651,7 @@ export default function AdminDashboard() {
                   </div>
                 )}
 
-                {selectedOrder.type === "Fisik" && selectedOrder.status === "Dikirim" && (
+                {selectedOrder.type === "Fisik" && (selectedOrder.status === "Diproses" || selectedOrder.status === "Dikirim" || selectedOrder.status === "Selesai") && (
                   <form onSubmit={handleUpdateResi} style={{ marginTop: '1rem', padding: '1rem', background: '#f8fafc', borderRadius: '8px' }}>
                     <label style={{display:'block', fontWeight:'bold', marginBottom:'4px'}}>Input Nomor Resi</label>
                     <p style={{ fontSize: '0.8rem', color: 'var(--kc-text-muted)', margin: '0 0 8px 0' }}>Untuk pengiriman produk fisik ke alamat klien.</p>

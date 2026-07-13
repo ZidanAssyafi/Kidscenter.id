@@ -550,8 +550,17 @@ export async function updateProjectData(id, payload) {
   const token = typeof window !== "undefined" ? (sessionStorage.getItem("token") || localStorage.getItem("token")) : null;
 
   let backendStatus = payload.status;
-  // Membiarkan status apa adanya sesuai dengan constraint di database Supabase
-  // (misalnya: "Briefing dan Pembayaran", "In Progress", "In Review", "Done", "Pembayaran ditolak")
+  if (backendStatus === "Briefing dan Pembayaran") {
+    backendStatus = "briefing";
+  } else if (backendStatus === "In Progress") {
+    backendStatus = "progres"; // Sesuaikan dengan nilai di DB Anda
+  } else if (backendStatus === "In Review") {
+    backendStatus = "review";
+  } else if (backendStatus === "Done") {
+    backendStatus = "selesai";
+  } else if (backendStatus === "Pembayaran ditolak") {
+    backendStatus = "pembayaran_ditolak";
+  }
 
   const res = await fetch(`${BASE_URL}/api/projects/${id}`, {
     method: "PUT",

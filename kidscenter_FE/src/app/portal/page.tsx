@@ -320,7 +320,9 @@ export default function PortalPage() {
                 >
                   <h3>{project.title}</h3>
                   <div className="kanban-card-meta">
-                    <span className="kanban-card-genre">{project.id}</span>
+                    <span className="kanban-card-genre" title={project.id}>
+                      {String(project.id).substring(0, 8)}...
+                    </span>
                     <span className="kanban-card-date">{project.date}</span>
                   </div>
                   {project.status === "Pembayaran ditolak" && (

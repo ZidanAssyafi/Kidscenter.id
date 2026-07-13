@@ -295,7 +295,7 @@ export default function CatalogPage() {
                     <span className="modal-meta-val price">Rp {(selectedProduct.price || 0).toLocaleString("id-ID")}</span>
                   </div>
                   <div className="modal-meta-row">
-                    <span className="modal-meta-label">Status</span>
+                    <span className="modal-meta-label">Stok</span>
                     <span className="modal-meta-val stock">{selectedProduct.stock}</span>
                   </div>
                 </div>

@@ -4,7 +4,7 @@ import "./globals.css";
 import "./landing.css";
 import ConditionalLayout from "@/components/ConditionalLayout";
 import GlobalPopup from "@/components/GlobalPopup";
-
+import Chatbot from "@/components/Chatbot";
 const nunito = Nunito({
   subsets: ["latin"],
   weight: ["400", "600", "700", "800", "900"],
@@ -30,6 +30,7 @@ export default function RootLayout({
         <ConditionalLayout>
           {children}
           <GlobalPopup />
+          <Chatbot />
         </ConditionalLayout>
       </body>
     </html>

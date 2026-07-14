@@ -1,0 +1,55 @@
+.page-loader-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.9);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.page-loader-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.page-loader-bounce {
+  animation: bounceMari 1.5s infinite cubic-bezier(0.28, 0.84, 0.42, 1);
+  filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));
+}
+
+.page-loader-image {
+  object-fit: contain;
+}
+
+.page-loader-text {
+  font-family: 'Fredoka One', 'Baloo 2', sans-serif; /* Fallback to rounded fonts */
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: #6c5ce7;
+  letter-spacing: 1px;
+  animation: pulseText 1.5s infinite ease-in-out;
+}
+
+@keyframes bounceMari {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes pulseText {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

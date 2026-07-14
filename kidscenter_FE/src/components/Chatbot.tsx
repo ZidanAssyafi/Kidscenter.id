@@ -162,8 +162,40 @@ export default function Chatbot() {
     }
   }, [messages, isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleResize = () => {
+      const windowEl = document.querySelector('.chatbot-window') as HTMLElement;
+      if (windowEl && window.visualViewport) {
+        if (window.innerWidth <= 768) {
+          // Set height exactly to visual viewport height so keyboard doesn't push it up out of view
+          windowEl.style.height = `${window.visualViewport.height}px`;
+        } else {
+          windowEl.style.height = '';
+        }
+      }
+    };
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleResize);
+      handleResize(); // trigger immediately on open
+    }
+
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleResize);
+      }
+    };
+  }, [isOpen]);
+
   // Hide chatbot on certain pages
-  if (pathname?.startsWith("/admin") || pathname?.startsWith("/profile")) {
+  if (
+    pathname?.startsWith("/admin") || 
+    pathname?.startsWith("/profile") ||
+    pathname?.startsWith("/login") ||
+    pathname?.startsWith("/register")
+  ) {
     return null;
   }
 

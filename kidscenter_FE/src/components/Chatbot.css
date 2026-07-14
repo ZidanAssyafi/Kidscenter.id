@@ -412,8 +412,7 @@
     right: 0;
     bottom: 0;
     width: 100vw;
-    height: 100vh;
-    height: 100dvh;
+    /* Height will be handled dynamically or by top/bottom limits */
     border-radius: 0;
     z-index: 1001;
     transform: none !important;

@@ -969,3 +969,14 @@
     height: 36px;
   }
 }
+
+@media (max-width: 640px) {
+  .order-id {
+    display: inline-block;
+    max-width: 130px; /* Batasi lebar ID pesanan */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: bottom;
+  }
+}

@@ -10,6 +10,7 @@ import { INITIAL_ORDERS } from "@/lib/initialData";
 import { compressImage } from "@/lib/imageUtils";
 import { showPopup } from "@/lib/popupUtils";
 import { getProducts, checkoutOrder } from "@/lib/api";
+import PageLoader from "@/components/PageLoader";
 
 const getImgSrc = (img: string) => {
   if (!img) return "";
@@ -24,6 +25,7 @@ interface CartItem {
 
 export default function CatalogPage() {
   const [products, setProducts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
     fetchProducts();
@@ -35,6 +37,8 @@ export default function CatalogPage() {
       setProducts(data);
     } catch (error: any) {
       console.error("Gagal mengambil produk:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -140,8 +144,10 @@ export default function CatalogPage() {
   const ongkir = hasPhysical ? 15000 : 0;
 
   return (
-    <div className="catalog-root">
-      <div className="catalog-container">
+    <>
+      {isLoading && <PageLoader />}
+      <div className="catalog-root">
+        <div className="catalog-container">
 
         {/* HEADER */}
         <div className="catalog-header">
@@ -515,7 +521,7 @@ export default function CatalogPage() {
           </div>
         </div>
       )}
-
-    </div>
+      </div>
+    </>
   );
 }
